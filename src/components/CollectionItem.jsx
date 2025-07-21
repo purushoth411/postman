@@ -107,7 +107,7 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
       });
       if (!res.ok) throw new Error('Failed to add request');
       const newRequest = await res.json();
-      setCollections(prev => prev.map(c => c.id === collection.id ? { ...c, requests: [...(c.requests || []), newRequest] } : c));
+      setCollections(prev => prev.map(c => c.id === collection.id ? { ...c, requests: [...(c.requests || []), newRequest.request] } : c));
       setNewRequestName('');
       setShowAddRequestInput(false);
       toast.success('Request added successfully');

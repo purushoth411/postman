@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { useState } from "react";
-import RequestEditor from "../components/RequestEditor";
+import RequestEditor from "../components/EditorDiv/RequestEditor";
 
 export default function Layout() {
   const navigate = useNavigate();
