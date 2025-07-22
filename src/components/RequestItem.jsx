@@ -1,5 +1,6 @@
 import React from 'react';
 import { File, MoreHorizontal } from 'lucide-react';
+import { useAuth } from '../utils/idb';
 
 const getMethodColor = (method) => {
   const colors = {
@@ -13,6 +14,7 @@ const getMethodColor = (method) => {
 };
 
 const RequestItem = ({ request, onRequestSelect, activeRequestId }) => {
+  const {setSelectedRequest}=useAuth();
   return (
     <div
       className={`group flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded-lg ml-4 ${
@@ -20,7 +22,8 @@ const RequestItem = ({ request, onRequestSelect, activeRequestId }) => {
           ? 'bg-orange-100 text-orange-800'
           : 'text-gray-700 hover:bg-gray-100'
       }`}
-      onClick={() => onRequestSelect?.(request)}
+      onClick={() => {onRequestSelect?.(request);
+        setSelectedRequest(request); }}
     >
       <span className={`px-2 py-0.5 text-xs font-semibold rounded ${getMethodColor(request.method)}`}>
         {request.method}

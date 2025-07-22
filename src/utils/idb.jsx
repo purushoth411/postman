@@ -7,6 +7,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedRequest, setSelectedRequest] = useState(null); // new state
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -20,36 +21,69 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-   const login = async (userData) => {
-    const appKey = "Postmon-Clone"; // generate unique App Key
+  const login = async (userData) => {
+    const appKey = "Postmon-Clone";
     const userWithKey = { ...userData, appKey };
 
     setUser(userWithKey);
     await set("LoggedInUser", userWithKey);
   };
+
   const logout = async () => {
     setUser(null);
     await del("LoggedInUser");
   };
 
-  const setFavourites = async (favourites) => {
-    setUser((prev) => {
-      const updatedUser = {
-        ...prev,
-        favMenus: favourites,
-      };
-      set("LoggedInUser", updatedUser);
-      return updatedUser;
-    });
+  const updateSelectedRequest = async (request) => {
+    setSelectedRequest(request); // update state
+    await set("SelectedRequest", request); // persist to IndexedDB
   };
+
+const updateRequest = async (id, changes) => {
+  try {
+    const response = await fetch(`http://localhost:5000/api/api/updateRequest/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(changes)
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update request");
+    }
+
+    // Merge changes with the current selectedRequest
+    const updated = { ...selectedRequest, ...changes };
+
+    // Update state and IndexedDB
+    setSelectedRequest(updated);
+    await set("SelectedRequest", updated);
+
+  } catch (error) {
+    console.error('Error updating request:', error);
+  }
+};
+
+
+
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, loading, setFavourites }}
+      value={{
+        user,
+        login,
+        logout,
+        loading,
+        selectedRequest,
+        setSelectedRequest: updateSelectedRequest,
+        updateRequest
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+
 
 export const useAuth = () => useContext(AuthContext);

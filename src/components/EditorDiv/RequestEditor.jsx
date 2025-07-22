@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import RequestBar from './RequestBar';
 import RequestTabs from './RequestTabs';
 import ResponseViewer from './ResponseViewer';
+import { useAuth } from '../../utils/idb';
 
-const RequestEditor = ({ request, onChangeRequest }) => {
+const RequestEditor = ({  onChangeRequest }) => {
+  const {selectedRequest}=useAuth();
+
+  const request = selectedRequest || { method: 'GET', url: '', body: '' };
   const [method, setMethod] = useState('GET');
   const [url, setUrl] = useState('');
   const [body, setBody] = useState('');
@@ -72,8 +76,7 @@ const RequestEditor = ({ request, onChangeRequest }) => {
   return (
     <div className="flex flex-col h-full border rounded shadow bg-white">
       <RequestBar
-        method={method}
-        url={url}
+       
         loading={loading}
         onChange={handleChange}
         onSend={handleSendRequest}
