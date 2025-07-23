@@ -1,5 +1,5 @@
 import React from 'react';
-import { History } from 'lucide-react';
+import { History, LibraryBig } from 'lucide-react';
 
 const CollectionIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -18,7 +18,7 @@ const Tabs = ({ activeTab, setActiveTab }) => (
       onClick={() => setActiveTab('collections')}
     >
       <div className="flex items-center justify-center space-x-2">
-        <CollectionIcon />
+        <LibraryBig size={17} />
         <span>Collections</span>
       </div>
     </button>

@@ -5,7 +5,7 @@ import { useAuth } from "../../utils/idb";
 const RequestBar = ({ loading, onChange, onSend }) => {
  
   const { selectedRequest, updateRequest } = useAuth();
-   console.log("selectedRequest: " + JSON.stringify(selectedRequest, null, 2));
+  // console.log("selectedRequest: " + JSON.stringify(selectedRequest, null, 2));
 
 
   const method = selectedRequest?.method || "GET";

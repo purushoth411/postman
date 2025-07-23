@@ -31,7 +31,7 @@ const CollectionList = ({ collections, setCollections, userId, onRequestSelect, 
       if (!res.ok) throw new Error('Failed to create collection');
 
       const newCollection = await res.json();
-      setCollections(prev => [...prev, { ...newCollection, requests: [], folders: [] }]);
+      setCollections(prev => [...prev, { ...newCollection,request_count:0, requests: [], folders: [] }]);
       setNewCollectionName('');
       setShowCollectionInput(false);
       toast.success('Collection created successfully');

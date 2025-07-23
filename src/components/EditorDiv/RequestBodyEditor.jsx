@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../utils/idb';
 
 const RequestBodyEditor = ({ method, body, onChange }) => {
+  const {selectedRequest,updateRequest}=useAuth();
   const [bodyType, setBodyType] = useState('raw'); // 'raw' or 'formdata'
   const [formData, setFormData] = useState([
     { key: '', value: '', description: '', type: 'text' },
@@ -14,19 +16,22 @@ const RequestBodyEditor = ({ method, body, onChange }) => {
   };
 
   const updateRequestBody = (data) => {
-    const form = new FormData();
-    data.forEach(item => {
-      if (item.key.trim()) {
-        if (item.type === 'file' && item.value instanceof File) {
-          form.append(item.key, item.value);
-        } else {
-          form.append(item.key, item.value);
-        }
-      }
-    });
+    const simplifiedData = data
+      .filter(item => item.key.trim())
+      .map(({ key, value, description, type }) => ({
+        key, value, description, type
+      }));
 
-    // Since FormData cannot be easily inspected, we pass the original data for now
-    onChange({ formData: data, isFormData: true });
+    const serialized = JSON.stringify({ formData: simplifiedData, isFormData: true });
+
+    updateRequest(selectedRequest.id, { body: serialized });
+    onChange("body", serialized); // optional local update
+  };
+
+  const handleRawChange = (e) => {
+    const raw = e.target.value;
+    updateRequest(selectedRequest.id, { body: raw });
+    onChange("body", raw); // optional local update
   };
 
   const addFormField = () => {
@@ -63,7 +68,7 @@ const RequestBodyEditor = ({ method, body, onChange }) => {
       {bodyType === 'raw' && (
         <textarea
           value={typeof body === 'string' ? body : ''}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={handleRawChange}
           placeholder={
             method === 'GET'
               ? 'GET requests do not support body'
@@ -92,7 +97,9 @@ const RequestBodyEditor = ({ method, body, onChange }) => {
               {item.type === 'file' ? (
                 <input
                   type="file"
-                  onChange={(e) => handleFormDataChange(index, 'value', e.target.files[0])}
+                  onChange={(e) =>
+                    handleFormDataChange(index, 'value', e.target.files[0]?.name || '')
+                  }
                   className="col-span-1 text-sm"
                 />
               ) : (

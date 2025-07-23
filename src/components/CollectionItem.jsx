@@ -16,6 +16,7 @@ import { toast } from 'react-hot-toast';
 
 import RequestItem from './RequestItem';
 import { useAuth } from '../utils/idb';
+import FolderItem from './FolderItem';
 
 const CollectionItem = ({ collection, setCollections, onRequestSelect, activeRequestId }) => {
     const { user } = useAuth();
@@ -29,6 +30,8 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
   const [newFolderName, setNewFolderName] = useState('');
 
   const dropdownRef = useRef(null);
+
+ // console.log("collcetioon Deytails"+JSON.stringify(collection,null,2));
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -49,7 +52,7 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
       if (data.status) {
         setCollections(prev =>
           prev.map(c =>
-            c.id === collection.id ? { ...c, requests: data.requests } : c
+            c.id === collection.id ? { ...c, requests: data.requests, folders: data.folders || [] } : c
           )
         );
       }
@@ -59,6 +62,32 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
     }
   }
   setExpanded(prev => !prev);
+};
+
+const setFolderData = (folderId, requests, folders) => {
+  setCollections(prev =>
+    prev.map(c => {
+      if (c.id !== collection.id) return c;
+
+      // Helper recursive update function
+      const updateFolders = (fArr) => {
+        return fArr.map(f => {
+          if (f.id === folderId) {
+            return { ...f, requests, folders };
+          }
+          if (f.folders?.length) {
+            return { ...f, folders: updateFolders(f.folders) };
+          }
+          return f;
+        });
+      };
+
+      return {
+        ...c,
+        folders: updateFolders(c.folders || [])
+      };
+    })
+  );
 };
 
 
@@ -208,7 +237,7 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
         )}
         
         <span className="text-xs text-gray-500">
-          {(collection.requests?.length || 0) + (collection.folders?.length || 0)}
+          {(collection.request_count) + (collection.folders?.length || 0)}
         </span>
 
         {/* Dropdown button */}
@@ -320,13 +349,17 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
       {/* Contents */}
       {expanded && (
         <div className="ml-2 mt-1 space-y-1">
-          {collection.folders?.map(folder => (
-            <div key={folder.id} className="ml-4 flex items-center space-x-2 px-2 py-1.5 text-sm text-gray-700">
-              <Folder className="w-4 h-4 text-gray-500" />
-              <span className="truncate flex-1">{folder.name}</span>
-            </div>
-          ))}
-         {collection.requests?.map(req => (
+        {collection.folders?.map(folder => (
+  <FolderItem
+    key={folder.id}
+    folder={folder}
+    userId={user.id}
+    onRequestSelect={onRequestSelect}
+    activeRequestId={activeRequestId}
+    setFolderData={setFolderData}
+  />
+))}
+{collection.requests?.map(req => (
   <RequestItem key={req.id} request={req} onRequestSelect={onRequestSelect} activeRequestId={activeRequestId} />
 ))}
 
