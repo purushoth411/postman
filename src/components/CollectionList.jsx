@@ -3,6 +3,7 @@ import { Plus  } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 import CollectionItem from './CollectionItem';
+import { useAuth } from '../utils/idb';
 
 const CollectionIcon = () => (
   <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -11,6 +12,7 @@ const CollectionIcon = () => (
 );
 
 const CollectionList = ({ collections, setCollections, userId, onRequestSelect, activeRequestId }) => {
+  const {user,selectedWorkspace}=useAuth();
   const [showCollectionInput, setShowCollectionInput] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState('');
 
@@ -25,12 +27,13 @@ const CollectionList = ({ collections, setCollections, userId, onRequestSelect, 
       const res = await fetch('http://localhost:5000/api/api/addCollection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, name }),
+        body: JSON.stringify({ user_id: userId,wks_id:selectedWorkspace.id, name }),
       });
 
       if (!res.ok) throw new Error('Failed to create collection');
 
-      const newCollection = await res.json();
+      const data = await res.json();
+      const newCollection=data.collection;
       setCollections(prev => [...prev, { ...newCollection,request_count:0, requests: [], folders: [] }]);
       setNewCollectionName('');
       setShowCollectionInput(false);

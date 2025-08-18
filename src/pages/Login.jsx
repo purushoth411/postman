@@ -46,12 +46,12 @@ function Login() {
         </div>
         <h4 className="text-center mb-3 text-prime fw-bold">Sign into your account</h4>
 
-        {errorMsg && (
+        {/* {errorMsg && (
           <div className="alert alert-danger alert-dismissible fade show" role="alert">
             <strong>Error!</strong> {errorMsg}
             <button type="button" className="btn-close" onClick={() => setErrorMsg('')} aria-label="Close"></button>
           </div>
-        )}
+        )} */}
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
@@ -104,7 +104,15 @@ function Login() {
             <a href="/reset_password" className="text-decoration-none text-secondary">
               Forgot password?
             </a>
+
           </div>
+          <div className="text-center mt-3">
+  <span className="text-secondary">Don't have an account? </span>
+  <a href="/signup" className="text-decoration-none text-prime fw-medium">
+    Signup
+  </a>
+</div>
+
         </form>
       </div>
     </div>

@@ -14,7 +14,7 @@ function App() {
       </AuthProvider>
       <Tooltip id="my-tooltip" />
       <Toaster
-        position="top-center" // updated position
+        position="bottom-right" // updated position
         reverseOrder={false}
         toastOptions={{
           className: "border",

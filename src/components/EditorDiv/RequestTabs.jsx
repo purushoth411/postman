@@ -1,7 +1,9 @@
 import React from 'react';
 import RequestBodyEditor from './RequestBodyEditor';
+import ParamsEditor from "./ParamsEditor";
+import HeadersEditor from "./HeadersEditor";
 
-const RequestTabs = ({ activeTab, setActiveTab, method, body, onBodyChange }) => {
+const RequestTabs = ({ activeTab, setActiveTab, method, body_raw, body_formdata, onBodyChange, params,headers,setParams,setHeaders }) => {
   return (
     <>
       <div className="flex border-b text-sm font-medium">
@@ -24,16 +26,21 @@ const RequestTabs = ({ activeTab, setActiveTab, method, body, onBodyChange }) =>
         {activeTab === 'body' && (
           <RequestBodyEditor
             method={method}
-            body={body}
+            body_raw={body_raw}
+            body_formdata={body_formdata}
             onChange={onBodyChange}
           />
         )}
-        {activeTab === 'headers' && (
-          <div className="text-gray-500 italic">Custom headers support coming soon...</div>
-        )}
-        {activeTab === 'params' && (
-          <div className="text-gray-500 italic">Query parameters editor coming soon...</div>
-        )}
+
+
+{activeTab === "params" && (
+  <ParamsEditor params={params} setParams={setParams} />
+)}
+
+{activeTab === "headers" && (
+  <HeadersEditor headers={headers} setHeaders={setHeaders} />
+)}
+
       </div>
     </>
   );

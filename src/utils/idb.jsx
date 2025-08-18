@@ -1,23 +1,50 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { set, get, del } from "idb-keyval"; // Import IndexedDB helper
-// import { v4 as uuidv4 } from "uuid";
+import { set, get, del } from "idb-keyval";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState(null); // new state
+  const [workspaces, setWorkspaces] = useState([]);
+  const [selectedWorkspace, setSelectedWorkspace] = useState(null);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+
+  // ✅ reusable fetchWorkspaces
+  const fetchWorkspaces = async (user) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/api/getWorkspaces?user_id=${user.id}`
+      );
+      const data = await res.json();
+
+      if (data.status) {
+        setWorkspaces(data.workspaces);
+
+        // restore or set default workspace
+        const storedWs = await get("SelectedWorkspace");
+        if (storedWs) {
+          setSelectedWorkspace(storedWs);
+        } else if (data.workspaces.length > 0) {
+          const defaultWs = data.workspaces[0];
+          setSelectedWorkspace(defaultWs);
+          await set("SelectedWorkspace", defaultWs);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching workspaces:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
       const storedUser = await get("LoggedInUser");
       if (storedUser) {
         setUser(storedUser);
+        await fetchWorkspaces(storedUser);
       }
       setLoading(false);
     };
-
     fetchUser();
   }, []);
 
@@ -27,46 +54,51 @@ export const AuthProvider = ({ children }) => {
 
     setUser(userWithKey);
     await set("LoggedInUser", userWithKey);
+
+    // ✅ always load workspaces after login/signup
+    await fetchWorkspaces(userWithKey);
   };
 
   const logout = async () => {
     setUser(null);
     await del("LoggedInUser");
+    await del("SelectedWorkspace");
+    await del("SelectedRequest");
+    setWorkspaces([]);
+    setSelectedWorkspace(null);
+    setSelectedRequest(null);
   };
 
   const updateSelectedRequest = async (request) => {
-    setSelectedRequest(request); // update state
-    await set("SelectedRequest", request); // persist to IndexedDB
+    setSelectedRequest(request);
+    await set("SelectedRequest", request);
   };
 
-const updateRequest = async (id, changes) => {
-  try {
-    const response = await fetch(`http://localhost:5000/api/api/updateRequest/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(changes)
-    });
+  const updateRequest = async (id, changes) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/api/updateRequest/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(changes),
+        }
+      );
 
-    if (!response.ok) {
-      throw new Error("Failed to update request");
+      if (!response.ok) throw new Error("Failed to update request");
+
+      const updated = { ...selectedRequest, ...changes };
+      setSelectedRequest(updated);
+      await set("SelectedRequest", updated);
+    } catch (error) {
+      console.error("Error updating request:", error);
     }
+  };
 
-    // Merge changes with the current selectedRequest
-    const updated = { ...selectedRequest, ...changes };
-
-    // Update state and IndexedDB
-    setSelectedRequest(updated);
-    await set("SelectedRequest", updated);
-
-  } catch (error) {
-    console.error('Error updating request:', error);
-  }
-};
-
-
-
+  const updateSelectedWorkspace = async (ws) => {
+    setSelectedWorkspace(ws);
+    await set("SelectedWorkspace", ws);
+  };
 
   return (
     <AuthContext.Provider
@@ -74,16 +106,18 @@ const updateRequest = async (id, changes) => {
         user,
         login,
         logout,
+        workspaces,
+        selectedWorkspace,
+        setSelectedWorkspace: updateSelectedWorkspace,
         loading,
         selectedRequest,
         setSelectedRequest: updateSelectedRequest,
-        updateRequest
+        updateRequest,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-
 
 export const useAuth = () => useContext(AuthContext);

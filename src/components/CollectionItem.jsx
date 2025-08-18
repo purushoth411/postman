@@ -34,6 +34,11 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
  // console.log("collcetioon Deytails"+JSON.stringify(collection,null,2));
 
   // Close dropdown when clicking outside
+
+  useEffect(()=>{
+    console.log("Colllection");
+    console.log(collection);
+  },[collection]);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -125,13 +130,13 @@ const setFolderData = (folderId, requests, folders) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            user_id:user.id,
+          user_id:user.id,
           collection_id: collection.id,
           name: trimmed,
           method: 'GET',
           url: '',
           headers: {},
-          body: '',
+          body_raw: '',
         }),
       });
       if (!res.ok) throw new Error('Failed to add request');
@@ -157,12 +162,14 @@ const setFolderData = (folderId, requests, folders) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          user_id:user.id,
           collection_id: collection.id,
           name: trimmed,
         }),
       });
       if (!res.ok) throw new Error('Failed to add folder');
-      const newFolder = await res.json();
+      const data = await res.json();
+      const newFolder=data.folder;
       setCollections(prev => prev.map(c => c.id === collection.id ? { ...c, folders: [...(c.folders || []), newFolder] } : c));
       setNewFolderName('');
       setShowAddFolderInput(false);

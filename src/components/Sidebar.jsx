@@ -8,26 +8,29 @@ import CollectionList from './CollectionList';
 import HistoryList from './HistoryList';
 
 const Sidebar = ({ history = [], onRequestSelect, activeRequestId }) => {
-  const { user } = useAuth();
+  const { user,selectedWorkspace } = useAuth();
   const [collections, setCollections] = useState([]);
   const [activeTab, setActiveTab] = useState('collections');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (user?.id) {
-      (async () => {
-        try {
-          const res = await fetch(`http://localhost:5000/api/api/getCollections?user_id=${user.id}`);
-          if (!res.ok) throw new Error('Failed to fetch collections');
-          const data = await res.json();
-          setCollections(data || []);
-        } catch (err) {
-          console.error(err);
-          toast.error('Error fetching collections.');
-        }
-      })();
-    }
-  }, [user?.id]);
+useEffect(() => {
+  if (user?.id && selectedWorkspace?.id) {
+    (async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/api/getCollections?wks_id=${selectedWorkspace.id}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch collections");
+        const data = await res.json();
+        setCollections(data || []);
+      } catch (err) {
+        console.error(err);
+        toast.error("Error fetching collections.");
+      }
+    })();
+  }
+}, [user?.id, selectedWorkspace?.id]);
+
 
   // Filter collections & history based on search term here or inside child components
   const filteredCollections = collections.filter(collection =>

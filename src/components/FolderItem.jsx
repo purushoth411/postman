@@ -99,7 +99,7 @@ const FolderItem = ({ folder, userId, onRequestSelect, activeRequestId, setFolde
           method: 'GET',
           url: '',
           headers: {},
-          body: ''
+          body_raw: ''
         })
       });
       if (!res.ok) throw new Error();
