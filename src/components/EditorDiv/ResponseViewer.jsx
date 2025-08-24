@@ -1,5 +1,6 @@
 import React from 'react';
-import { Copy, Download } from 'lucide-react';
+import { Copy } from 'lucide-react';
+import toast from 'react-hot-toast'; // optional, for feedback
 
 const ResponseViewer = ({ response }) => {
   const formatJson = (text) => {
@@ -8,6 +9,18 @@ const ResponseViewer = ({ response }) => {
     } catch {
       return text;
     }
+  };
+
+  const handleCopy = () => {
+    if (!response?.body) return;
+
+    navigator.clipboard.writeText(formatJson(response.body))
+      .then(() => {
+        toast.success("Response copied to clipboard");
+      })
+      .catch(() => {
+        toast.error("Failed to copy response");
+      });
   };
 
   if (!response) return null;
@@ -33,11 +46,11 @@ const ResponseViewer = ({ response }) => {
           </span>
         </div>
         <div className="flex gap-2">
-          <button className="p-2 rounded hover:bg-gray-200">
+          <button
+            onClick={handleCopy}
+            className="p-2 rounded hover:bg-gray-200"
+          >
             <Copy className="w-4 h-4" />
-          </button>
-          <button className="p-2 rounded hover:bg-gray-200">
-            <Download className="w-4 h-4" />
           </button>
         </div>
       </div>

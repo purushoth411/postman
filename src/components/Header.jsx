@@ -3,6 +3,7 @@ import { Search, Plus, Upload, Download, Save, User, LogOut } from "lucide-react
 import { useAuth } from "../utils/idb";
 import { useNavigate } from "react-router-dom";
 import WorkspaceModal from "./WorkspaceModal"; // ✅ import
+import RequestSearch from "./RequestSearch";
 
 const Header = ({ onNewRequest, onSave, onImport, onExport }) => {
   const { logout, workspaces, selectedWorkspace, setSelectedWorkspace, user } = useAuth();
@@ -82,7 +83,7 @@ const Header = ({ onNewRequest, onSave, onImport, onExport }) => {
         </div>
 
         {/* Center - Search */}
-        <div className="flex-1 max-w-md mx-8">
+        {/* <div className="flex-1 max-w-md mx-8">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
@@ -91,17 +92,18 @@ const Header = ({ onNewRequest, onSave, onImport, onExport }) => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
             />
           </div>
-        </div>
+        </div> */}
+        <RequestSearch />
 
         {/* Right */}
         <div className="flex items-center space-x-2">
-          <button
+          {/* <button
             onClick={onNewRequest}
             className="flex items-center space-x-1 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
           >
             <Plus className="w-4 h-4" /> <span className="text-sm font-medium">New</span>
-          </button>
-          <button onClick={onImport} title="Import" className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+          </button> */}
+          {/* <button onClick={onImport} title="Import" className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
             <Upload className="w-4 h-4" />
           </button>
           <button onClick={onExport} title="Export" className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
@@ -109,18 +111,22 @@ const Header = ({ onNewRequest, onSave, onImport, onExport }) => {
           </button>
           <button onClick={onSave} title="Save" className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
             <Save className="w-4 h-4" />
-          </button>
+          </button> */}
           <div className="w-px h-6 bg-gray-300 mx-2"></div>
-          <button title="User Profile" className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+          <button  title={user?.name || "User Profile"} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
             <User className="w-4 h-4" />
           </button>
           <button
-            onClick={handleLogout}
-            title="Logout"
-            className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+  onClick={() => {
+    if (window.confirm("Are you sure you want to log out?")) {
+      handleLogout();
+    }
+  }}
+  title="Logout"
+  className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-lg"
+>
+  <LogOut className="w-4 h-4" />
+</button>
         </div>
       </header>
 

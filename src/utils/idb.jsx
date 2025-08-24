@@ -9,6 +9,11 @@ export const AuthProvider = ({ children }) => {
   const [workspaces, setWorkspaces] = useState([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [expandPath,setExpandPath]=useState({
+  collectionId: null,
+  folderIds: null, // e.g., [parentFolderId, subFolderId]
+  requestId: null,
+});
 
   // ✅ reusable fetchWorkspaces
   const fetchWorkspaces = async (user) => {
@@ -113,6 +118,8 @@ export const AuthProvider = ({ children }) => {
         selectedRequest,
         setSelectedRequest: updateSelectedRequest,
         updateRequest,
+        expandPath,
+        setExpandPath
       }}
     >
       {children}

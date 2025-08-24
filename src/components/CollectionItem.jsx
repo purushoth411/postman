@@ -19,7 +19,7 @@ import { useAuth } from '../utils/idb';
 import FolderItem from './FolderItem';
 
 const CollectionItem = ({ collection, setCollections, onRequestSelect, activeRequestId }) => {
-    const { user } = useAuth();
+    const { user,expandPath } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -49,15 +49,50 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleExpanded = async () => {
+// Auto-expand on search
+useEffect(() => {
+  if (expandPath?.collectionId === collection.id && !expanded) {
+    (async () => {
+      try {
+        if (!collection.requests) {
+          const res = await fetch(
+            `http://localhost:5000/api/api/getRequestsByCollectionId?collection_id=${collection.id}`
+          );
+          const data = await res.json();
+          if (data.status) {
+            setCollections(prev =>
+              prev.map(c =>
+                c.id === collection.id
+                  ? { ...c, requests: data.requests, folders: data.folders || [] }
+                  : c
+              )
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching requests:', err);
+        toast.error('Failed to load requests');
+      }
+      // Only set expanded if this is triggered by searchPath
+      setExpanded(true);
+    })();
+  }
+}, [expandPath, collection.id]);
+
+// Normal toggle on user click
+const toggleExpanded = async () => {
   if (!expanded && !collection.requests) {
     try {
-      const res = await fetch(`http://localhost:5000/api/api/getRequestsByCollectionId?collection_id=${collection.id}`);
+      const res = await fetch(
+        `http://localhost:5000/api/api/getRequestsByCollectionId?collection_id=${collection.id}`
+      );
       const data = await res.json();
       if (data.status) {
         setCollections(prev =>
           prev.map(c =>
-            c.id === collection.id ? { ...c, requests: data.requests, folders: data.folders || [] } : c
+            c.id === collection.id
+              ? { ...c, requests: data.requests, folders: data.folders || [] }
+              : c
           )
         );
       }
@@ -66,25 +101,68 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
       toast.error('Failed to load requests');
     }
   }
+  // Toggle based on user click
   setExpanded(prev => !prev);
 };
 
-const setFolderData = (folderId, requests, folders) => {
+
+// const setFolderData = (folderId, requests, folders, name) => {
+//   setCollections(prev =>
+//     prev.map(c => {
+//       if (c.id !== collection.id) return c;
+
+//       // Helper recursive update function
+//       const updateFolders = (fArr) => {
+//         return fArr.map(f => {
+//           if (f.id === folderId) {
+//             return { 
+//               ...f, 
+//               requests, 
+//               folders, 
+//               ...(name !== undefined ? { name } : {}) // only update if provided
+//             };
+//           }
+//           if (f.folders?.length) {
+//             return { ...f, folders: updateFolders(f.folders) };
+//           }
+//           return f;
+//         });
+//       };
+
+//       return {
+//         ...c,
+//         folders: updateFolders(c.folders || [])
+//       };
+//     })
+//   );
+// };
+
+const setFolderData = (folderId, requests, folders, name, isDelete = false) => {
   setCollections(prev =>
     prev.map(c => {
       if (c.id !== collection.id) return c;
 
-      // Helper recursive update function
+      // Recursive update function
       const updateFolders = (fArr) => {
-        return fArr.map(f => {
-          if (f.id === folderId) {
-            return { ...f, requests, folders };
-          }
-          if (f.folders?.length) {
-            return { ...f, folders: updateFolders(f.folders) };
-          }
-          return f;
-        });
+        return fArr
+          .map(f => {
+            if (f.id === folderId) {
+              if (isDelete) {
+                return null; // mark for removal
+              }
+              return { 
+                ...f, 
+                requests, 
+                folders, 
+                ...(name !== undefined ? { name } : {}) 
+              };
+            }
+            if (f.folders?.length) {
+              return { ...f, folders: updateFolders(f.folders) };
+            }
+            return f;
+          })
+          .filter(Boolean); // remove nulls
       };
 
       return {
@@ -94,6 +172,33 @@ const setFolderData = (folderId, requests, folders) => {
     })
   );
 };
+
+const setRequestData = (requestId, newData, isDelete = false) => {
+  setCollections(prev =>
+    prev.map(c => {
+      if (c.id !== collection.id) return c;
+
+      const updateFolders = (folders = []) =>
+        folders.map(f => ({
+          ...f,
+          requests: f.requests?.map(r =>
+            r.id === requestId ? { ...r, ...newData } : r
+          ).filter(r => !isDelete || r.id !== requestId),
+          folders: updateFolders(f.folders)
+        }));
+
+      return {
+        ...c,
+        requests: c.requests
+          ?.map(r => r.id === requestId ? { ...r, ...newData } : r)
+          .filter(r => !isDelete || r.id !== requestId),
+        folders: updateFolders(c.folders || [])
+      };
+    })
+  );
+};
+
+
 
 
   const handleRename = async () => {
@@ -243,9 +348,9 @@ const setFolderData = (folderId, requests, folders) => {
           </button>
         )}
         
-        <span className="text-xs text-gray-500">
+        {/* <span className="text-xs text-gray-500">
           {(collection.request_count) + (collection.folders?.length || 0)}
-        </span>
+        </span> */}
 
         {/* Dropdown button */}
         <div className="relative">
@@ -364,10 +469,11 @@ const setFolderData = (folderId, requests, folders) => {
     onRequestSelect={onRequestSelect}
     activeRequestId={activeRequestId}
     setFolderData={setFolderData}
+    setRequestData={setRequestData} 
   />
 ))}
 {collection.requests?.map(req => (
-  <RequestItem key={req.id} request={req} onRequestSelect={onRequestSelect} activeRequestId={activeRequestId} />
+  <RequestItem key={req.id} request={req} onRequestSelect={onRequestSelect} activeRequestId={activeRequestId} setRequestData={setRequestData}  />
 ))}
 
         </div>

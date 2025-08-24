@@ -7,7 +7,7 @@ const RequestTabs = ({ activeTab, setActiveTab, method, body_raw, body_formdata,
   return (
     <>
       <div className="flex border-b text-sm font-medium">
-        {['body', 'headers', 'params'].map((tab) => (
+        {['Body', 'Headers', 'Params'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -23,7 +23,7 @@ const RequestTabs = ({ activeTab, setActiveTab, method, body_raw, body_formdata,
       </div>
 
       <div className="p-4">
-        {activeTab === 'body' && (
+        {activeTab === 'Body' && (
           <RequestBodyEditor
             method={method}
             body_raw={body_raw}
@@ -33,11 +33,11 @@ const RequestTabs = ({ activeTab, setActiveTab, method, body_raw, body_formdata,
         )}
 
 
-{activeTab === "params" && (
+{activeTab === "Params" && (
   <ParamsEditor params={params} setParams={setParams} />
 )}
 
-{activeTab === "headers" && (
+{activeTab === "Headers" && (
   <HeadersEditor headers={headers} setHeaders={setHeaders} />
 )}
 

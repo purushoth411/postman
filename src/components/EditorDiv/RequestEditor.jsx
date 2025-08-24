@@ -21,7 +21,7 @@ const RequestEditor = ({ onChangeRequest }) => {
   const [url, setUrl] = useState(request.url);
   const [bodyRaw, setBodyRaw] = useState(request.body_raw);
   const [bodyFormData, setBodyFormData] = useState(request.body_formdata);
-  const [params,setParams]=useState(request.params);
+  const [params,setParams]=useState(request.queryParams);
   const [headers,setHeaders]=useState(request.headers);
   const [activeTab, setActiveTab] = useState('body');
   const [response, setResponse] = useState(null);

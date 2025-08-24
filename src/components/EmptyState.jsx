@@ -28,14 +28,14 @@ const EmptyState = () => {
       </p>
       
       <div className="flex space-x-4">
-        <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
+        {/* <button className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
           <Plus className="w-5 h-5" />
           <span>Create New Request</span>
         </button>
         <button className="border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
           <Settings className="w-5 h-5" />
           <span>Import Collection</span>
-        </button>
+        </button> */}
       </div>
     </div>
   );

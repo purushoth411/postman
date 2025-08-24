@@ -1,5 +1,5 @@
 import React from 'react';
-import { History, LibraryBig } from 'lucide-react';
+import { History, LibraryBig, Globe } from 'lucide-react';
 
 const CollectionIcon = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -33,6 +33,19 @@ const Tabs = ({ activeTab, setActiveTab }) => (
       <div className="flex items-center justify-center space-x-2">
         <History className="w-4 h-4" />
         <span>History</span>
+      </div>
+    </button>
+    <button
+      className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+        activeTab === 'environments'
+          ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
+          : 'text-gray-600 hover:text-gray-800'
+      }`}
+      onClick={() => setActiveTab('environments')}
+    >
+      <div className="flex items-center justify-center space-x-2">
+        <Globe className="w-4 h-4" />
+        <span>Env</span>
       </div>
     </button>
   </div>
