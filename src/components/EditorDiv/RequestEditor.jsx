@@ -5,7 +5,7 @@ import ResponseViewer from './ResponseViewer';
 import { useAuth } from '../../utils/idb';
 
 const RequestEditor = ({ onChangeRequest }) => {
-  const { selectedRequest } = useAuth();
+  const { user,selectedRequest } = useAuth();
 
   const request = selectedRequest || { 
     id: null,
@@ -110,6 +110,43 @@ const RequestEditor = ({ onChangeRequest }) => {
   }
 };
 
+const handleSaveRequest = async (request) => {
+  if (!request) return;
+
+  // Normalize request data
+  const requestData = {
+    name: request.name || "Untitled Request",
+    method: request.method || "GET",
+    url: request.url || "",
+    body_raw: request.body_raw || "",
+    body_formdata: request.body_formdata || "",
+    queryParams: request.queryParams || [],
+  };
+
+  try {
+    const res = await fetch("http://localhost:5000/api/api/saveRequest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        request_id: request.id,
+        user_id: user.id,
+        request_data: requestData,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.status) {
+      alert("✅ Request saved for all users!");
+    } else {
+      alert("❌ Failed to save request");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("⚠️ Error saving request");
+  }
+};
+
+
 
   return (
     <div className="flex flex-col h-full border rounded shadow bg-white">
@@ -117,6 +154,7 @@ const RequestEditor = ({ onChangeRequest }) => {
         loading={loading}
         onChange={handleChange}
         onSend={handleSendRequest}
+        onSave={handleSaveRequest}
       />
 
       <RequestTabs

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import WorkspaceModal from "./WorkspaceModal"; // ✅ import
 import RequestSearch from "./RequestSearch";
 
-const Header = ({ onNewRequest, onSave, onImport, onExport }) => {
+const Header = ( ) => {
   const { logout, workspaces, selectedWorkspace, setSelectedWorkspace, user } = useAuth();
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);

@@ -3,82 +3,83 @@ import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import { useState } from "react";
 import RequestEditor from "../components/EditorDiv/RequestEditor";
+import EnvironmentEditor from "../components/EnvironmentEditor";
+import { useAuth } from "../utils/idb";
 
 export default function Layout() {
   const navigate = useNavigate();
-  
-   const [selectedRequest, setSelectedRequest] = useState(null);
-
-  const handleNewRequest = () => {
-    // You can open new request editor with empty/default request
-    setSelectedRequest({
-      id: null,
-      name: '',
-      method: 'GET',
-      url: '',
-      body: '',
-      headers: {},
-    });
-  };
+  const {
+    user,
+    selectedRequest,
+    setSelectedRequest,
+    selectedEnvironment,
+    setSelectedEnvironment,
+    selectedGlobal,
+    setSelectedGlobal,
+    selectedWorkspace,
+  } = useAuth();
 
   const handleRequestSelect = (request) => {
     setSelectedRequest(request);
   };
-  
 
-  
-  const handleSave = () => {
-    // Handle save functionality
-    console.log('Save current request');
-    // Add your save logic here
+  const handleEnvironmentSelect = (environment) => {
+    setSelectedEnvironment(environment);
   };
-  
-  const handleImport = () => {
-    // Handle import functionality
-    console.log('Import collection');
-    // Add file import logic here
+
+  const handleGlobalSelect = (workspaceId) => {
+    setSelectedGlobal(workspaceId);
   };
-  
-  const handleExport = () => {
-    // Handle export functionality
-    console.log('Export collection');
-    // Add export logic here
+
+  // Determine what to show in the main content area
+  const renderMainContent = () => {
+    // Priority order: Request > Environment > Global > Default Outlet
+    if (selectedRequest) {
+      return (
+        <RequestEditor
+          request={selectedRequest}
+          onChangeRequest={setSelectedRequest}
+        />
+      );
+    }
+    
+    if (selectedEnvironment) {
+      return (
+        <EnvironmentEditor
+          environment={selectedEnvironment}
+          workspaceId={selectedWorkspace?.id}
+          isGlobal={false}
+        />
+      );
+    }
+    
+    if (selectedGlobal) {
+      return (
+        <EnvironmentEditor
+          workspaceId={selectedGlobal}
+          isGlobal={true}
+        />
+      );
+    }
+    
+    // Default to Outlet (Dashboard or other routes)
+    return <Outlet />;
   };
-  
-  const handleSettings = () => {
-    // Navigate to settings or open settings modal
-    navigate('/settings');
-  };
-  
+
   return (
     <div className="h-screen flex flex-col w-full">
-      <Header
-        onNewRequest={handleNewRequest}
-        onSave={handleSave}
-        onImport={handleImport}
-        onExport={handleExport}
-        onSettings={handleSettings}
-      />
+      <Header />
      
       {/* Main content area with sidebar */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           onRequestSelect={handleRequestSelect}
-         
-          
-       
+          onEnvironmentSelect={handleEnvironmentSelect}
+          onGlobalSelect={handleGlobalSelect}
         />
        
-         <main className="flex-1 overflow-y-auto bg-gray-50" id="scroll-container">
-          {selectedRequest ? (
-            <RequestEditor
-              request={selectedRequest}
-              onChangeRequest={setSelectedRequest}
-            />
-          ) : (
-            <Outlet />
-            
-          )}
+        <main className="flex-1 overflow-y-auto bg-gray-50" id="scroll-container">
+          {renderMainContent()}
         </main>
       </div>
       

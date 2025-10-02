@@ -19,7 +19,7 @@ import { useAuth } from '../utils/idb';
 import FolderItem from './FolderItem';
 
 const CollectionItem = ({ collection, setCollections, onRequestSelect, activeRequestId }) => {
-    const { user,expandPath } = useAuth();
+    const { user,expandPath,selectedWorkspace } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -353,6 +353,7 @@ const setRequestData = (requestId, newData, isDelete = false) => {
         </span> */}
 
         {/* Dropdown button */}
+         {selectedWorkspace.role !== 'VIEWER' &&
         <div className="relative">
           <button
             onClick={e => {
@@ -410,6 +411,7 @@ const setRequestData = (requestId, newData, isDelete = false) => {
             </div>
           )}
         </div>
+}
       </div>
 
       {/* Add Request Input */}

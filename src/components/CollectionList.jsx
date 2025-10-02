@@ -56,6 +56,8 @@ const CollectionList = ({ collections, setCollections, userId, onRequestSelect, 
 
   return (
     <>
+    {selectedWorkspace.role !== 'VIEWER' &&
+    <>
       {showCollectionInput ? (
         <div className="flex items-center space-x-2 mb-2">
           <input
@@ -84,6 +86,8 @@ const CollectionList = ({ collections, setCollections, userId, onRequestSelect, 
           <span>New Collection</span>
         </button>
       )}
+      </>
+    }
 
       {collections.length > 0 ? (
         collections.map(col => (

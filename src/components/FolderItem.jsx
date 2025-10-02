@@ -32,7 +32,7 @@ const FolderItem = ({
   const [newRequestName, setNewRequestName] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
   const dropdownRef = useRef(null);
-  const { user, expandPath } = useAuth();
+  const { user, expandPath,selectedWorkspace } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -244,6 +244,7 @@ const toggleExpanded = async () => {
         {loading && <span className="text-xs text-gray-400">Loading...</span>}
 
         {/* Dropdown */}
+         {selectedWorkspace.role !== 'VIEWER' &&
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={(e) => {
@@ -299,6 +300,7 @@ const toggleExpanded = async () => {
             </div>
           )}
         </div>
+}
       </div>
 
       {/* Inputs */}

@@ -9,11 +9,13 @@ export const AuthProvider = ({ children }) => {
   const [workspaces, setWorkspaces] = useState([]);
   const [selectedWorkspace, setSelectedWorkspace] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [expandPath,setExpandPath]=useState({
-  collectionId: null,
-  folderIds: null, // e.g., [parentFolderId, subFolderId]
-  requestId: null,
-});
+  const [selectedEnvironment, setSelectedEnvironment] = useState(null);
+  const [selectedGlobal, setSelectedGlobal] = useState(null);
+  const [expandPath, setExpandPath] = useState({
+    collectionId: null,
+    folderIds: null, // e.g., [parentFolderId, subFolderId]
+    requestId: null,
+  });
 
   // ✅ reusable fetchWorkspaces
   const fetchWorkspaces = async (user) => {
@@ -22,10 +24,8 @@ export const AuthProvider = ({ children }) => {
         `http://localhost:5000/api/api/getWorkspaces?user_id=${user.id}`
       );
       const data = await res.json();
-
       if (data.status) {
         setWorkspaces(data.workspaces);
-
         // restore or set default workspace
         const storedWs = await get("SelectedWorkspace");
         if (storedWs) {
@@ -56,10 +56,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (userData) => {
     const appKey = "Postmon-Clone";
     const userWithKey = { ...userData, appKey };
-
     setUser(userWithKey);
     await set("LoggedInUser", userWithKey);
-
     // ✅ always load workspaces after login/signup
     await fetchWorkspaces(userWithKey);
   };
@@ -69,41 +67,109 @@ export const AuthProvider = ({ children }) => {
     await del("LoggedInUser");
     await del("SelectedWorkspace");
     await del("SelectedRequest");
+    await del("SelectedEnvironment");
+    await del("SelectedGlobal");
     setWorkspaces([]);
     setSelectedWorkspace(null);
     setSelectedRequest(null);
+    setSelectedEnvironment(null);
+    setSelectedGlobal(null);
   };
 
   const updateSelectedRequest = async (request) => {
-    setSelectedRequest(request);
-    await set("SelectedRequest", request);
+  const requestId=request.id || request;
+  if (!user) return;
+
+  try {
+    const res = await fetch(
+      `http://localhost:5000/api/api/getRequest?request_id=${requestId}&user_id=${user.id}`
+    );
+    const data = await res.json();
+
+    if (data.status) {
+      setSelectedRequest(data.request);
+      await set("SelectedRequest", data.request); // optional local caching
+    } else {
+      console.warn("Request not found");
+    }
+  } catch (err) {
+    console.error("Error fetching request:", err);
+  }
+};
+
+
+  const updateSelectedEnvironment = async (environment) => {
+    setSelectedEnvironment(environment);
+    setSelectedRequest(null); // Clear request selection
+    setSelectedGlobal(null); // Clear global selection
+    await set("SelectedEnvironment", environment);
+    await del("SelectedRequest");
+    await del("SelectedGlobal");
+  };
+
+  const updateSelectedGlobal = async (workspaceId) => {
+    setSelectedGlobal(workspaceId);
+    setSelectedRequest(null); // Clear request selection
+    setSelectedEnvironment(null); // Clear environment selection
+    await set("SelectedGlobal", workspaceId);
+    await del("SelectedRequest");
+    await del("SelectedEnvironment");
   };
 
   const updateRequest = async (id, changes) => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/api/updateRequest/${id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(changes),
-        }
-      );
+  if (!user) return;
+  try {
+    const response = await fetch(
+      `http://localhost:5000/api/api/updateRequest?request_id=${id}&user_id=${user.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(changes),
+      }
+    );
+    const data = await response.json();
+    if (!data.status) throw new Error("Failed to update draft");
 
-      if (!response.ok) throw new Error("Failed to update request");
+    const updated = { ...selectedRequest, ...changes, isDraft: true };
+    setSelectedRequest(updated);
+    await set("SelectedRequest", updated);
+  } catch (error) {
+    console.error("Error updating draft:", error);
+  }
+};
 
-      const updated = { ...selectedRequest, ...changes };
-      setSelectedRequest(updated);
-      await set("SelectedRequest", updated);
-    } catch (error) {
-      console.error("Error updating request:", error);
-    }
-  };
 
   const updateSelectedWorkspace = async (ws) => {
     setSelectedWorkspace(ws);
+    // Clear selections when workspace changes
+    setSelectedRequest(null);
+    setSelectedEnvironment(null);
+    setSelectedGlobal(null);
     await set("SelectedWorkspace", ws);
+    await del("SelectedRequest");
+    await del("SelectedEnvironment");
+    await del("SelectedGlobal");
   };
+
+  // Restore selections on app load
+  useEffect(() => {
+    const restoreSelections = async () => {
+      if (selectedWorkspace) {
+        const storedRequest = await get("SelectedRequest");
+        const storedEnvironment = await get("SelectedEnvironment");
+        const storedGlobal = await get("SelectedGlobal");
+
+        if (storedRequest) {
+          setSelectedRequest(storedRequest);
+        } else if (storedEnvironment) {
+          setSelectedEnvironment(storedEnvironment);
+        } else if (storedGlobal) {
+          setSelectedGlobal(storedGlobal);
+        }
+      }
+    };
+    restoreSelections();
+  }, [selectedWorkspace]);
 
   return (
     <AuthContext.Provider
@@ -117,9 +183,13 @@ export const AuthProvider = ({ children }) => {
         loading,
         selectedRequest,
         setSelectedRequest: updateSelectedRequest,
+        selectedEnvironment,
+        setSelectedEnvironment: updateSelectedEnvironment,
+        selectedGlobal,
+        setSelectedGlobal: updateSelectedGlobal,
         updateRequest,
         expandPath,
-        setExpandPath
+        setExpandPath,
       }}
     >
       {children}

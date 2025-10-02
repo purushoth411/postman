@@ -8,12 +8,13 @@ import CollectionList from './CollectionList';
 import HistoryList from './HistoryList';
 import EnvironmentList from './EnvironmentList';
 
-const Sidebar = ({ history = [], onRequestSelect, activeRequestId }) => {
-  const { user, selectedWorkspace } = useAuth();
+const Sidebar = ({ onRequestSelect, onEnvironmentSelect, onGlobalSelect }) => {
+  const { user, selectedWorkspace, selectedRequest } = useAuth();
   const [collections, setCollections] = useState([]);
   const [environments, setEnvironments] = useState([]);
   const [activeTab, setActiveTab] = useState('collections');
   const [searchTerm, setSearchTerm] = useState('');
+  const [history] = useState([]); // Your history data - you can manage this however you want
 
   useEffect(() => {
     if (user?.id && selectedWorkspace?.id) {
@@ -34,12 +35,12 @@ const Sidebar = ({ history = [], onRequestSelect, activeRequestId }) => {
   }, [user?.id, selectedWorkspace?.id]);
 
   // Fetch environments when user/workspace changes or when environment tab is active
-  useEffect(() => {
+ useEffect(() => {
     if (user?.id && selectedWorkspace?.id && activeTab === 'environments') {
       (async () => {
         try {
           const res = await fetch(
-            `http://localhost:5000/api/api/getEnvironments?wks_id=${selectedWorkspace.id}`
+            `http://localhost:5000/api/api/getEnvironments?wks_id=${selectedWorkspace.id}&user_id=${user.id}`
           );
           if (!res.ok) throw new Error("Failed to fetch environments");
           const data = await res.json();
@@ -63,11 +64,7 @@ const Sidebar = ({ history = [], onRequestSelect, activeRequestId }) => {
   );
 
   const filteredEnvironments = environments.filter(env =>
-    env.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    Object.keys(env.variables || {}).some(key => 
-      key.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      env.variables[key].toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    env.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -81,16 +78,21 @@ const Sidebar = ({ history = [], onRequestSelect, activeRequestId }) => {
             setCollections={setCollections}
             userId={user?.id}
             onRequestSelect={onRequestSelect}
-            activeRequestId={activeRequestId}
+            activeRequestId={selectedRequest?.id}
           />
-        ) : activeTab === 'history' ? (
-          <HistoryList history={filteredHistory} onRequestSelect={onRequestSelect} />
+        // ) : activeTab === 'history' ? (
+        //   <HistoryList 
+        //     history={filteredHistory} 
+        //     onRequestSelect={onRequestSelect} 
+        //   />
         ) : (
-          <EnvironmentList
+           <EnvironmentList
             environments={filteredEnvironments}
             setEnvironments={setEnvironments}
             userId={user?.id}
             workspaceId={selectedWorkspace?.id}
+            onEnvironmentSelect={onEnvironmentSelect}
+            onGlobalSelect={onGlobalSelect}
           />
         )}
       </div>

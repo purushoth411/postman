@@ -15,7 +15,7 @@ const getMethodColor = (method) => {
 };
 
 const RequestItem = ({ request, onRequestSelect, activeRequestId,setRequestData }) => {
-  const { selectedRequest, setSelectedRequest } = useAuth();
+  const { selectedRequest, setSelectedRequest,selectedWorkspace } = useAuth();
   const [editing, setEditing] = useState(false);
   const [editingName, setEditingName] = useState(request.name);
   const [activeDropdown, setActiveDropdown] = useState(false);
@@ -125,6 +125,7 @@ const handleDelete = async () => {
       )}
 
       {/* Dropdown */}
+       {selectedWorkspace.role !== 'VIEWER' &&
       <div className="relative" ref={dropdownRef}>
         <button
           className="p-1 hover:bg-gray-200 rounded"
@@ -157,6 +158,7 @@ const handleDelete = async () => {
           </div>
         )}
       </div>
+}
     </div>
   );
 };
