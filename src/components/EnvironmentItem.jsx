@@ -102,26 +102,27 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
           <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
         )}
         {!isActive && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSetActive();
-            }}
-            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            Set Active
-          </button>
+           <button
+  onClick={(e) => {
+    e.stopPropagation();
+    onSetActive();
+  }}
+  className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+>
+  Set Active
+</button>
+
         )}
         <div className="relative">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowMenu(!showMenu);
-            }}
-            className="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-          >
-            <MoreVertical className="w-4 h-4 text-gray-500" />
-          </button>
+        <button
+  onClick={(e) => {
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  }}
+  className="p-1 hover:bg-gray-200 rounded"
+>
+  <MoreVertical className="w-3 h-3" />
+</button>
           {showMenu && (
             <>
               <div 

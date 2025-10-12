@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false }) => {
+const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false, onVariablesChange }) => {
   const [variables, setVariables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

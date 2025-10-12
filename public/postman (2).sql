@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: Aug 18, 2025 at 06:57 PM
+-- Generation Time: Oct 06, 2025 at 06:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,27 @@ SET time_zone = "+00:00";
 --
 -- Database: `postman`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_active_environments`
+--
+
+CREATE TABLE `tbl_active_environments` (
+  `id` int(11) NOT NULL,
+  `workspace_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `environment_id` int(11) DEFAULT NULL,
+  `set_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_active_environments`
+--
+
+INSERT INTO `tbl_active_environments` (`id`, `workspace_id`, `user_id`, `environment_id`, `set_at`) VALUES
+(1, 1, 1, 3, '2025-10-06 16:31:20');
 
 -- --------------------------------------------------------
 
@@ -49,8 +70,43 @@ CREATE TABLE `tbl_api_requests` (
 --
 
 INSERT INTO `tbl_api_requests` (`id`, `collection_id`, `user_id`, `name`, `method`, `url`, `body_raw`, `body_formdata`, `queryParams`, `response`, `response_code`, `created_at`, `updated_at`, `folder_id`) VALUES
-(1, 1, 1, 'first request', 'POST', 'http://localhost:5000/api/api/addCollection', '{\n\"user_id\":\"1\"\n}', '[{\"key\":\"name\",\"value\":\"third request\",\"description\":\"\",\"type\":\"text\"},{\"key\":\"wks_id\",\"value\":\"1\",\"description\":\"\",\"type\":\"text\"},{\"key\":\"user_id\",\"value\":\"1\",\"description\":\"\",\"type\":\"text\"}]', NULL, NULL, NULL, '2025-08-17 16:02:00', '2025-08-18 16:56:03', 1),
-(2, 1, 1, 'second request', 'GET', 'http://localhost:5000/api/api/getWorkspaces?user_id=4', '', NULL, '[{\"key\":\"user_id\",\"value\":\"4\"}]', NULL, NULL, '2025-08-17 16:42:17', '2025-08-18 16:52:06', 1);
+(1, 1, 1, 'Untitled Request', 'GET', 'hihihoihjgjhg', '', '', '\"[]\"', NULL, NULL, '2025-08-17 16:02:00', '2025-08-30 05:12:47', 1),
+(2, 1, 1, 'second request', 'GET', 'http://localhost:5000/api/api/getWorkspaces?user_id=1', '', '', '[{\"key\":\"user_id\",\"value\":\"1\"}]', NULL, NULL, '2025-08-17 16:42:17', '2025-08-30 06:11:07', 1),
+(4, NULL, 1, 'request id', 'GET', '', '', NULL, NULL, NULL, NULL, '2025-08-24 07:11:58', '2025-08-24 07:11:58', NULL),
+(5, 1, 1, 'testing', 'GET', '', '', NULL, NULL, NULL, NULL, '2025-08-24 10:50:15', '2025-08-24 16:52:49', NULL),
+(11, 1, 1, 'ffdhd', 'GET', '', '', NULL, NULL, NULL, NULL, '2025-08-25 01:28:17', '2025-08-25 01:28:17', NULL),
+(12, 1, 1, 'Untitled Request', 'GET', 'hihihoihjgjhg12324', '', '', '[]', NULL, NULL, '2025-08-29 14:16:20', '2025-08-30 05:17:30', NULL),
+(13, 8, 2, 'new reques', 'GET', '', '', NULL, NULL, NULL, NULL, '2025-08-30 06:58:53', '2025-08-30 06:58:53', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_api_requests_draft`
+--
+
+CREATE TABLE `tbl_api_requests_draft` (
+  `id` int(11) NOT NULL,
+  `request_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
+  `method` enum('GET','POST','PUT','DELETE','PATCH','OPTIONS') DEFAULT NULL,
+  `url` text DEFAULT NULL,
+  `body_raw` text DEFAULT NULL,
+  `body_formdata` text DEFAULT NULL,
+  `queryParams` text DEFAULT NULL,
+  `response` text DEFAULT NULL,
+  `response_code` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_api_requests_draft`
+--
+
+INSERT INTO `tbl_api_requests_draft` (`id`, `request_id`, `user_id`, `name`, `method`, `url`, `body_raw`, `body_formdata`, `queryParams`, `response`, `response_code`, `created_at`, `updated_at`) VALUES
+(11, 13, 1, 'new reques', NULL, NULL, NULL, NULL, '[]', NULL, NULL, '2025-10-02 16:11:20', '2025-10-06 16:00:19'),
+(15, 2, 1, 'second request', NULL, 'http://localhost:5000/api/api/getWorkspaces?user_id=1', NULL, NULL, '[{\"key\":\"user_id\",\"value\":\"1\"}]', NULL, NULL, '2025-10-06 16:34:18', '2025-10-06 16:36:39');
 
 -- --------------------------------------------------------
 
@@ -71,10 +127,13 @@ CREATE TABLE `tbl_collections` (
 --
 
 INSERT INTO `tbl_collections` (`id`, `user_id`, `name`, `workspace_id`, `created_at`) VALUES
-(1, 1, 'First collectionn', 1, '2025-08-17 16:01:34'),
-(2, 1, 'Test', 1, '2025-08-17 16:09:58'),
-(3, 1, 'Test', 1, '2025-08-17 16:52:00'),
-(4, 1, 'Test', 1, '2025-08-17 16:54:34');
+(1, 1, 'First collection', 1, '2025-08-17 16:01:34'),
+(3, 1, 'Testing', 1, '2025-08-17 16:52:00'),
+(4, 1, 'Test', 1, '2025-08-17 16:54:34'),
+(5, 1, 'third request', 1, '2025-08-18 17:08:27'),
+(6, 1, 'third request', 1, '2025-08-18 17:10:37'),
+(7, 1, 'third request', 1, '2025-08-22 15:48:14'),
+(8, 2, 'new collect', 3, '2025-08-30 06:58:44');
 
 -- --------------------------------------------------------
 
@@ -84,10 +143,56 @@ INSERT INTO `tbl_collections` (`id`, `user_id`, `name`, `workspace_id`, `created
 
 CREATE TABLE `tbl_environments` (
   `id` int(11) NOT NULL,
+  `workspace_id` int(11) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
-  `name` varchar(100) DEFAULT NULL,
-  `variables` text DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_environments`
+--
+
+INSERT INTO `tbl_environments` (`id`, `workspace_id`, `user_id`, `name`, `created_at`) VALUES
+(1, 3, 1, 'New environmentt', '2025-10-02 16:55:40'),
+(2, 3, 1, 'Environment 2', '2025-10-06 16:11:21'),
+(3, 1, 1, 'New one', '2025-10-06 16:27:11');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_environment_variables`
+--
+
+CREATE TABLE `tbl_environment_variables` (
+  `id` int(11) NOT NULL,
+  `environment_id` int(11) NOT NULL,
+  `key` varchar(255) NOT NULL,
+  `value` text DEFAULT NULL,
+  `type` enum('default','secret') DEFAULT 'default'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_environment_variables`
+--
+
+INSERT INTO `tbl_environment_variables` (`id`, `environment_id`, `key`, `value`, `type`) VALUES
+(1, 1, 'variable_1', '762386', 'default'),
+(2, 1, 'variable_2', '', 'default'),
+(3, 3, 'user_id', '1', 'default');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tbl_global_variables`
+--
+
+CREATE TABLE `tbl_global_variables` (
+  `id` int(11) NOT NULL,
+  `workspace_id` int(11) NOT NULL,
+  `key` varchar(255) NOT NULL,
+  `value` text DEFAULT NULL,
+  `type` enum('default','secret') DEFAULT 'default'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -111,7 +216,9 @@ CREATE TABLE `tbl_request_folders` (
 --
 
 INSERT INTO `tbl_request_folders` (`id`, `collection_id`, `parent_folder_id`, `user_id`, `name`, `created_at`, `updated_at`) VALUES
-(1, 1, NULL, 1, 'First Folder', '2025-08-17 10:31:47', '2025-08-17 10:31:47');
+(1, 1, NULL, 1, 'First Folder', '2025-08-17 10:31:47', '2025-08-24 10:49:42'),
+(8, 3, NULL, 1, 'primary f1', '2025-08-24 09:43:03', '2025-08-24 09:43:03'),
+(11, 8, NULL, 2, 'TEst', '2025-08-30 01:34:31', '2025-08-30 01:34:31');
 
 -- --------------------------------------------------------
 
@@ -163,7 +270,8 @@ CREATE TABLE `tbl_users` (
 --
 
 INSERT INTO `tbl_users` (`id`, `name`, `email`, `password`, `created_at`) VALUES
-(1, 'Purushoth', 'purushoth411@gmail.com', '123456', '2025-08-17 16:01:25');
+(1, 'Purushoth', 'purushoth411@gmail.com', '123456', '2025-08-17 16:01:25'),
+(2, 'purushoth2', 'purushoth2@4112001', '123456', '2025-08-30 06:58:02');
 
 -- --------------------------------------------------------
 
@@ -186,7 +294,9 @@ CREATE TABLE `tbl_workspaces` (
 --
 
 INSERT INTO `tbl_workspaces` (`id`, `user_id`, `name`, `description`, `created_at`, `updated_at`, `is_default_wks`) VALUES
-(1, 1, 'My Workspace', NULL, '2025-08-17 16:01:25', '2025-08-17 16:01:25', '0');
+(1, 1, 'My Workspace', NULL, '2025-08-17 16:01:25', '2025-08-17 16:01:25', '0'),
+(2, 2, 'My Workspace', NULL, '2025-08-30 06:58:02', '2025-08-30 06:58:02', '0'),
+(3, 2, 'Team Workspace', NULL, '2025-08-30 06:58:36', '2025-08-30 06:58:36', '');
 
 -- --------------------------------------------------------
 
@@ -207,11 +317,23 @@ CREATE TABLE `tbl_workspace_members` (
 --
 
 INSERT INTO `tbl_workspace_members` (`id`, `workspace_id`, `user_id`, `role`, `added_at`) VALUES
-(1, 1, 1, 'OWNER', '2025-08-17 16:01:25');
+(1, 1, 1, 'OWNER', '2025-08-17 16:01:25'),
+(2, 2, 2, 'OWNER', '2025-08-30 06:58:02'),
+(3, 3, 2, 'OWNER', '2025-08-30 06:58:36'),
+(4, 3, 1, 'VIEWER', '2025-08-30 06:58:36');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `tbl_active_environments`
+--
+ALTER TABLE `tbl_active_environments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_user_workspace` (`workspace_id`,`user_id`),
+  ADD KEY `fk_active_env` (`environment_id`),
+  ADD KEY `fk_active_env_user` (`user_id`);
 
 --
 -- Indexes for table `tbl_api_requests`
@@ -221,6 +343,13 @@ ALTER TABLE `tbl_api_requests`
   ADD KEY `user_id` (`user_id`),
   ADD KEY `collection_id` (`collection_id`),
   ADD KEY `folder_id` (`folder_id`);
+
+--
+-- Indexes for table `tbl_api_requests_draft`
+--
+ALTER TABLE `tbl_api_requests_draft`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_draft_user_request` (`request_id`,`user_id`);
 
 --
 -- Indexes for table `tbl_collections`
@@ -235,7 +364,22 @@ ALTER TABLE `tbl_collections`
 --
 ALTER TABLE `tbl_environments`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `fk_env_workspace` (`workspace_id`),
+  ADD KEY `fk_env_user` (`user_id`);
+
+--
+-- Indexes for table `tbl_environment_variables`
+--
+ALTER TABLE `tbl_environment_variables`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_env_vars` (`environment_id`);
+
+--
+-- Indexes for table `tbl_global_variables`
+--
+ALTER TABLE `tbl_global_variables`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_globals_workspace` (`workspace_id`);
 
 --
 -- Indexes for table `tbl_request_folders`
@@ -288,28 +432,52 @@ ALTER TABLE `tbl_workspace_members`
 --
 
 --
+-- AUTO_INCREMENT for table `tbl_active_environments`
+--
+ALTER TABLE `tbl_active_environments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `tbl_api_requests`
 --
 ALTER TABLE `tbl_api_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `tbl_api_requests_draft`
+--
+ALTER TABLE `tbl_api_requests_draft`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `tbl_collections`
 --
 ALTER TABLE `tbl_collections`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `tbl_environments`
 --
 ALTER TABLE `tbl_environments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `tbl_environment_variables`
+--
+ALTER TABLE `tbl_environment_variables`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `tbl_global_variables`
+--
+ALTER TABLE `tbl_global_variables`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `tbl_request_folders`
 --
 ALTER TABLE `tbl_request_folders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `tbl_request_headers`
@@ -327,23 +495,31 @@ ALTER TABLE `tbl_request_history`
 -- AUTO_INCREMENT for table `tbl_users`
 --
 ALTER TABLE `tbl_users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `tbl_workspaces`
 --
 ALTER TABLE `tbl_workspaces`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tbl_workspace_members`
 --
 ALTER TABLE `tbl_workspace_members`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `tbl_active_environments`
+--
+ALTER TABLE `tbl_active_environments`
+  ADD CONSTRAINT `fk_active_env` FOREIGN KEY (`environment_id`) REFERENCES `tbl_environments` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_active_env_user` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_active_env_workspace` FOREIGN KEY (`workspace_id`) REFERENCES `tbl_workspaces` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `tbl_api_requests`
@@ -364,7 +540,20 @@ ALTER TABLE `tbl_collections`
 -- Constraints for table `tbl_environments`
 --
 ALTER TABLE `tbl_environments`
-  ADD CONSTRAINT `tbl_environments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_env_user` FOREIGN KEY (`user_id`) REFERENCES `tbl_users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_env_workspace` FOREIGN KEY (`workspace_id`) REFERENCES `tbl_workspaces` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `tbl_environment_variables`
+--
+ALTER TABLE `tbl_environment_variables`
+  ADD CONSTRAINT `fk_env_vars` FOREIGN KEY (`environment_id`) REFERENCES `tbl_environments` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `tbl_global_variables`
+--
+ALTER TABLE `tbl_global_variables`
+  ADD CONSTRAINT `fk_globals_workspace` FOREIGN KEY (`workspace_id`) REFERENCES `tbl_workspaces` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `tbl_request_folders`

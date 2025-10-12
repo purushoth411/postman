@@ -11,7 +11,9 @@ import {
 import { toast } from 'react-hot-toast';
 import EnvironmentItem from './EnvironmentItem';
 
-const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, onEnvironmentSelect, onGlobalSelect, activeEnvironment }) => {
+
+
+const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, onEnvironmentSelect, onGlobalSelect, activeEnvironment, onEnvironmentChange }) => {
   const [showAddInput, setShowAddInput] = useState(false);
   const [newEnvName, setNewEnvName] = useState('');
   const [activeEnvironmentId, setActiveEnvironmentId] = useState(null);
@@ -150,7 +152,7 @@ const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, o
       {/* Environment List */}
       <div className="space-y-1">
         {environments.map(env => (
-          <EnvironmentItem
+             <EnvironmentItem
             key={env.id}
             environment={env}
             isActive={activeEnvironmentId === env.id}

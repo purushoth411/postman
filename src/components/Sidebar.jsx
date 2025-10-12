@@ -86,7 +86,7 @@ const Sidebar = ({ onRequestSelect, onEnvironmentSelect, onGlobalSelect }) => {
         //     onRequestSelect={onRequestSelect} 
         //   />
         ) : (
-           <EnvironmentList
+          <EnvironmentList
             environments={filteredEnvironments}
             setEnvironments={setEnvironments}
             userId={user?.id}
