@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../utils/idb';
-import { Code, FormInput, Plus, Settings, Trash2 } from 'lucide-react';
+import { Code, FormInput, Plus, Settings, Trash2, Upload } from 'lucide-react';
 
-const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange }) => {
+const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange, fileObjects, setFileObjects }) => {
   const { selectedRequest, updateRequest } = useAuth();
 
    const [localRaw, setLocalRaw] = useState(body_raw || '');
@@ -15,16 +15,19 @@ const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange }) => {
   const [formData, setFormData] = useState(
     body_formdata
       ? JSON.parse(body_formdata)
-      : [{ key: '', value: '', description: '', type: 'text' }]
+      : [{ key: '', value: '', description: '', type: 'text', enabled: true }]
   );
 
- useEffect(() => {
+  useEffect(() => {
   if (body_formdata) {
     setBodyType('formdata');
-    setFormData(JSON.parse(body_formdata));
+    const parsed = JSON.parse(body_formdata);
+    // Ensure all items have enabled field
+    const normalized = parsed.map(item => ({ ...item, enabled: item.enabled !== false }));
+    setFormData(normalized);
   } else {
     setBodyType('raw');
-    setFormData([{ key: '', value: '', description: '', type: 'text' }]); // reset formData too
+    setFormData([{ key: '', value: '', description: '', type: 'text', enabled: true }]); // reset formData too
   }
 
   // reset raw body too
@@ -43,11 +46,13 @@ const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange }) => {
   const updateFormDataBody = (data) => {
     const simplified = data
       .filter((item) => item.key.trim())
-      .map(({ key, value, description, type }) => ({
+      .map(({ key, value, description, type, enabled }) => ({
         key,
-        value,
+        value: type === 'file' ? (value || '') : value, // Store filename for file type
         description,
         type,
+        enabled: enabled !== false,
+        fileKey: type === 'file' ? key : undefined, // Store key to reference file object
       }));
 
     const serialized = JSON.stringify(simplified);
@@ -71,7 +76,7 @@ const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange }) => {
   const addFormField = () => {
     setFormData([
       ...formData,
-      { key: '', value: '', description: '', type: 'text' },
+      { key: '', value: '', description: '', type: 'text', enabled: true },
     ]);
   };
 
@@ -175,7 +180,22 @@ const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange }) => {
                   <div className="col-span-3 relative">
                     <input
                       type="file"
-                      onChange={(e) => handleFormDataChange(index, 'value', e.target.files[0]?.name || '')}
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          // Store file object in the Map using the key
+                          const fileKey = item.key || `file_${index}`;
+                          const newFileObjects = new Map(fileObjects);
+                          newFileObjects.set(fileKey, file);
+                          setFileObjects(newFileObjects);
+                          
+                          // Update form data with filename
+                          const updated = [...formData];
+                          updated[index] = { ...updated[index], value: file.name, enabled: updated[index].enabled !== false };
+                          setFormData(updated);
+                          updateFormDataBody(updated);
+                        }
+                      }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
                     <div className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md bg-white cursor-pointer hover:bg-gray-50">

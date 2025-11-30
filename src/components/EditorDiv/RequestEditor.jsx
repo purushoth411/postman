@@ -27,6 +27,8 @@ const RequestEditor = ({ onChangeRequest }) => {
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [variables, setVariables] = useState({});
+  // Store file objects separately (can't be serialized to JSON)
+  const [fileObjects, setFileObjects] = useState(new Map());
 
   // Fetch environment and global variables
   useEffect(() => {
@@ -85,6 +87,8 @@ const RequestEditor = ({ onChangeRequest }) => {
     setBodyRaw(selectedRequest.body_raw || '');
     setBodyFormData(selectedRequest.body_formdata || '');
     setResponse(null);
+    // Clear file objects when switching requests
+    setFileObjects(new Map());
   }, [selectedRequest?.id]);
 
   const handleChange = (key, value) => {
@@ -143,19 +147,32 @@ const RequestEditor = ({ onChangeRequest }) => {
             // Parse and create FormData with variable replacement
             const parsed = JSON.parse(bodyFormData || '[]');
             const formData = new FormData();
-            parsed.forEach(({ key, value, type, enabled }) => {
-              if (!key || !enabled) return;
+            parsed.forEach(({ key, value, type, enabled, fileKey }) => {
+              if (!key || enabled === false) return;
 
-              if (type === 'file' && value instanceof File) {
-                formData.append(key, value);
+              if (type === 'file') {
+                // Try to get file from fileObjects map using fileKey or key
+                const fileObj = fileObjects.get(fileKey || key);
+                if (fileObj instanceof File) {
+                  formData.append(key, fileObj);
+                } else if (value) {
+                  // Fallback: if we have a filename but no file object, append empty
+                  // This shouldn't happen in normal flow, but handle gracefully
+                  console.warn(`File object not found for key: ${key}`);
+                }
               } else {
                 // Replace variables in form data values
-                formData.append(key, replaceVariables(value));
+                formData.append(key, replaceVariables(value || ''));
               }
             });
+            // Don't set Content-Type header for FormData - browser will set it with boundary
+            delete options.headers['Content-Type'];
             options.body = formData;
           }
         }
+      } else if (method === 'GET' && (bodyRaw || bodyFormData)) {
+        // Warn about GET requests with body (body will be ignored)
+        console.warn('GET requests do not support request body. Body data will be ignored.');
       }
 
       const start = Date.now();
@@ -172,6 +189,8 @@ const RequestEditor = ({ onChangeRequest }) => {
         time: end - start,
         size: new Blob([text]).size,
         resolvedUrl, // Show the resolved URL in response
+        requestMethod: method,
+        requestHeaders: options.headers,
       });
     } catch (err) {
       setResponse({
@@ -251,6 +270,8 @@ const RequestEditor = ({ onChangeRequest }) => {
         setParams={setParams}
         setHeaders={setHeaders}
         onBodyChange={handleChange}
+        fileObjects={fileObjects}
+        setFileObjects={setFileObjects}
       />
 
       <ResponseViewer response={response} variables={variables} />

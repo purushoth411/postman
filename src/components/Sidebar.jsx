@@ -68,10 +68,10 @@ const Sidebar = ({ onRequestSelect, onEnvironmentSelect, onGlobalSelect }) => {
   );
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
+    <div className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full shadow-sm">
       <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
       <SearchBar activeTab={activeTab} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-      <div className="flex-1 overflow-auto p-2 space-y-2">
+      <div className="flex-1 overflow-auto p-3 space-y-1">
         {activeTab === 'collections' ? (
           <CollectionList
             collections={filteredCollections}

@@ -13,6 +13,7 @@ import {
 import RequestItem from "./RequestItem";
 import toast from "react-hot-toast";
 import { useAuth } from "../utils/idb";
+import { getSocket } from "../utils/Socket";
 
 const FolderItem = ({
   folder,
@@ -33,6 +34,62 @@ const FolderItem = ({
   const [newFolderName, setNewFolderName] = useState("");
   const dropdownRef = useRef(null);
   const { user, expandPath,selectedWorkspace } = useAuth();
+
+  
+    
+      // SOCKET SETUP — Listen for new collections
+  useEffect(() => {
+  const socket = getSocket();
+  if (!socket || !user?.id) return;
+
+const handleFolderAdded = (data) => {
+ 
+
+  const newFolder = data.folder;
+
+  // only update this FolderItem if the added folder is a child of this one
+  if (parseInt(newFolder.parent_folder_id) !== parseInt(folder.id)) return;
+
+  setFolderData(
+    folder.id,
+    folder.requests || [],
+    [...(folder.folders || []), newFolder]
+  );
+};
+
+
+  const handleFolderRenamed = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+    setFolderData(data.folder_id, folder.requests || [], folder.folders || [], data.newName);
+  };
+
+  const handleFolderDeleted = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+    setFolderData(data.folder_id, null, null, null, true);
+  };
+
+  const handleRequestAdded = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+    const newRequest = data.request;
+    setFolderData(
+      newRequest.folder_id,
+      [...(folder.requests || []), newRequest],
+      folder.folders || []
+    );
+  };
+
+  socket.on("folderAdded", handleFolderAdded);
+  socket.on("folderRenamed", handleFolderRenamed);
+  socket.on("folderDeleted", handleFolderDeleted);
+  socket.on("requestAdded", handleRequestAdded);
+
+  return () => {
+    socket.off("folderAdded", handleFolderAdded);
+    socket.off("folderRenamed", handleFolderRenamed);
+    socket.off("folderDeleted", handleFolderDeleted);
+    socket.off("requestAdded", handleRequestAdded);
+  };
+}, [user?.id, selectedWorkspace?.id]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -211,13 +268,13 @@ const toggleExpanded = async () => {
   };
 
   return (
-    <div className="ml-4">
-      <div className="flex items-center space-x-2 px-2 py-1 cursor-pointer text-sm text-gray-700">
-        <button onClick={toggleExpanded}>
+    <div className="ml-4 mb-1">
+      <div className="flex items-center space-x-2 px-3 py-2 cursor-pointer text-sm rounded-lg hover:bg-white transition-colors duration-150 border border-transparent hover:border-gray-200 hover:shadow-sm">
+        <button onClick={toggleExpanded} className="p-0.5 hover:bg-gray-100 rounded transition-colors">
           {expanded ? (
-            <ChevronDown className="w-4 h-4 text-gray-400" />
+            <ChevronDown className="w-4 h-4 text-gray-500" />
           ) : (
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-4 h-4 text-gray-500" />
           )}
         </button>
 
@@ -228,7 +285,7 @@ const toggleExpanded = async () => {
             onChange={(e) => setEditingName(e.target.value)}
             onKeyDown={(e) => handleKeyDownInput(e, handleRename)}
             onBlur={() => handleRename()}
-            className="text-sm border px-1 rounded"
+            className="text-sm border border-orange-300 px-3 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         ) : (
           <div className="flex-1 flex items-center" onClick={toggleExpanded}>
@@ -237,7 +294,7 @@ const toggleExpanded = async () => {
             ) : (
               <Folder className="w-4 h-4 text-blue-500" />
             )}
-            <span className="truncate ml-1">{folder.name}</span>
+            <span className="truncate ml-2 font-medium text-gray-800">{folder.name}</span>
           </div>
         )}
 
@@ -253,49 +310,49 @@ const toggleExpanded = async () => {
                 prev === folder.id ? null : folder.id
               );
             }}
-            className="p-1 hover:bg-gray-200 rounded"
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
           >
-            <MoreVertical className="w-3 h-3" />
+            <MoreVertical className="w-4 h-4 text-gray-500" />
           </button>
           {activeDropdown === folder.id && (
-            <div className="absolute right-0 mt-1 bg-white shadow-lg border rounded z-10 w-48">
+            <div className="absolute right-0 mt-1 bg-white shadow-xl border border-gray-200 rounded-xl z-10 w-52 overflow-hidden">
               <button
-                className="px-3 py-2 text-sm hover:bg-gray-100 w-full text-left"
+                className="px-4 py-2.5 text-sm hover:bg-gray-50 w-full text-left transition-colors flex items-center space-x-2"
                 onClick={() => {
                   setEditing(true);
                   setActiveDropdown(null);
                 }}
               >
-                <Edit3 className="w-4 h-4 inline mr-2" />
-                Rename
+                <Edit3 className="w-4 h-4" />
+                <span>Rename</span>
               </button>
               <button
-                className="px-3 py-2 text-sm hover:bg-gray-100 w-full text-left"
+                className="px-4 py-2.5 text-sm hover:bg-gray-50 w-full text-left transition-colors flex items-center space-x-2"
                 onClick={() => {
                   setShowAddRequestInput(true);
                   setActiveDropdown(null);
                 }}
               >
-                <FileText className="w-4 h-4 inline mr-2" />
-                Add Request
+                <FileText className="w-4 h-4" />
+                <span>Add Request</span>
               </button>
               <button
-                className="px-3 py-2 text-sm hover:bg-gray-100 w-full text-left"
+                className="px-4 py-2.5 text-sm hover:bg-gray-50 w-full text-left transition-colors flex items-center space-x-2"
                 onClick={() => {
                   setShowAddFolderInput(true);
                   setActiveDropdown(null);
                 }}
               >
-                <FolderPlus className="w-4 h-4 inline mr-2" />
-                Add Folder
+                <FolderPlus className="w-4 h-4" />
+                <span>Add Folder</span>
               </button>
-              <hr />
+              <div className="border-t border-gray-100 my-1"></div>
               <button
-                className="px-3 py-2 text-sm hover:bg-red-50 text-red-600 w-full text-left"
+                className="px-4 py-2.5 text-sm hover:bg-red-50 text-red-600 w-full text-left transition-colors flex items-center space-x-2"
                 onClick={handleDelete}
               >
-                <Trash2 className="w-4 h-4 inline mr-2" />
-                Delete
+                <Trash2 className="w-4 h-4" />
+                <span>Delete</span>
               </button>
             </div>
           )}
@@ -305,11 +362,11 @@ const toggleExpanded = async () => {
 
       {/* Inputs */}
       {showAddRequestInput && (
-        <div className="ml-6 mt-1 flex items-center space-x-2">
+        <div className="ml-8 mt-2 mb-2 flex items-center space-x-2">
           <FileText className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border px-2 py-1 rounded text-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
             placeholder="Request name..."
             value={newRequestName}
             onChange={(e) => setNewRequestName(e.target.value)}
@@ -324,11 +381,11 @@ const toggleExpanded = async () => {
       )}
 
       {showAddFolderInput && (
-        <div className="ml-6 mt-1 flex items-center space-x-2">
+        <div className="ml-8 mt-2 mb-2 flex items-center space-x-2">
           <Folder className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border px-2 py-1 rounded text-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
             placeholder="Folder name..."
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
@@ -344,7 +401,7 @@ const toggleExpanded = async () => {
 
       {/* Contents */}
       {expanded && (
-        <div className="ml-6 space-y-1">
+        <div className="ml-6 space-y-0.5">
           {folder.folders?.map((sub) => (
             <FolderItem
               key={sub.id}

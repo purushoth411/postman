@@ -11,6 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getSocket } from '../utils/Socket';
 
 const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false, onVariablesChange }) => {
   const [variables, setVariables] = useState([]);
@@ -19,6 +20,98 @@ const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false,
   const [showValues, setShowValues] = useState({});
   const [hasChanges, setHasChanges] = useState(false);
   const [deletedIds, setDeletedIds] = useState([]);
+
+  // Socket listeners for variable operations
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket || !workspaceId) return;
+
+    if (isGlobal) {
+      // Global variable listeners
+      const handleGlobalVariableAdded = (data) => {
+        console.log('Socket Event: globalVariableAdded', data);
+        if (data.workspaceId === workspaceId) {
+          setVariables(prev => {
+            const exists = prev.some(v => v.id === data.variable.id);
+            if (!exists) {
+              return [...prev, data.variable];
+            }
+            return prev;
+          });
+        }
+      };
+
+      const handleGlobalVariableUpdated = (data) => {
+        console.log('Socket Event: globalVariableUpdated', data);
+        if (data.workspaceId === workspaceId) {
+          setVariables(prev =>
+            prev.map(v =>
+              v.id === data.variableId ? { ...v, ...data.variable } : v
+            )
+          );
+        }
+      };
+
+      const handleGlobalVariableDeleted = (data) => {
+        console.log('Socket Event: globalVariableDeleted', data);
+        if (data.workspaceId === workspaceId) {
+          setVariables(prev => prev.filter(v => v.id !== data.variableId));
+        }
+      };
+
+      socket.on('globalVariableAdded', handleGlobalVariableAdded);
+      socket.on('globalVariableUpdated', handleGlobalVariableUpdated);
+      socket.on('globalVariableDeleted', handleGlobalVariableDeleted);
+
+      return () => {
+        socket.off('globalVariableAdded', handleGlobalVariableAdded);
+        socket.off('globalVariableUpdated', handleGlobalVariableUpdated);
+        socket.off('globalVariableDeleted', handleGlobalVariableDeleted);
+      };
+    } else if (environment) {
+      // Environment variable listeners
+      const handleEnvironmentVariableAdded = (data) => {
+        console.log('Socket Event: environmentVariableAdded', data);
+        if (data.environmentId === environment.id) {
+          setVariables(prev => {
+            const exists = prev.some(v => v.id === data.variable.id);
+            if (!exists) {
+              return [...prev, data.variable];
+            }
+            return prev;
+          });
+        }
+      };
+
+      const handleEnvironmentVariableUpdated = (data) => {
+        console.log('Socket Event: environmentVariableUpdated', data);
+        if (data.environmentId === environment.id) {
+          setVariables(prev =>
+            prev.map(v =>
+              v.id === data.variableId ? { ...v, ...data.variable } : v
+            )
+          );
+        }
+      };
+
+      const handleEnvironmentVariableDeleted = (data) => {
+        console.log('Socket Event: environmentVariableDeleted', data);
+        if (data.environmentId === environment.id) {
+          setVariables(prev => prev.filter(v => v.id !== data.variableId));
+        }
+      };
+
+      socket.on('environmentVariableAdded', handleEnvironmentVariableAdded);
+      socket.on('environmentVariableUpdated', handleEnvironmentVariableUpdated);
+      socket.on('environmentVariableDeleted', handleEnvironmentVariableDeleted);
+
+      return () => {
+        socket.off('environmentVariableAdded', handleEnvironmentVariableAdded);
+        socket.off('environmentVariableUpdated', handleEnvironmentVariableUpdated);
+        socket.off('environmentVariableDeleted', handleEnvironmentVariableDeleted);
+      };
+    }
+  }, [workspaceId, environment, isGlobal]);
 
   useEffect(() => {
     if (isGlobal && workspaceId) {

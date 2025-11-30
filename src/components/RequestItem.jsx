@@ -97,49 +97,50 @@ const handleDelete = async () => {
 
   return (
     <div
-      className={`group flex items-center space-x-2 px-2 py-1.5 text-sm cursor-pointer rounded-lg ml-4 ${
-        selectedRequest?.id === request?.id ? 'bg-orange-100 text-orange-800'
-          : 'text-gray-700 hover:bg-gray-100'
+      className={`group flex items-center space-x-2 px-3 py-2 text-sm cursor-pointer rounded-lg ml-4 transition-all duration-150 ${
+        selectedRequest?.id === request?.id 
+          ? 'bg-orange-50 text-orange-900 border border-orange-200 shadow-sm'
+          : 'text-gray-700 hover:bg-white hover:border hover:border-gray-200 hover:shadow-sm border border-transparent'
       }`}
       onClick={() => {
         onRequestSelect?.(request);
         setSelectedRequest(request);
       }}
     >
-      <span className={`px-2 py-0.5 text-xs font-semibold rounded ${getMethodColor(request.method)}`}>
+      <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${getMethodColor(request.method)}`}>
         {request.method}
       </span>
-      <File className="w-4 h-4 text-gray-400" />
+      <File className={`w-4 h-4 ${selectedRequest?.id === request?.id ? 'text-orange-600' : 'text-gray-400'}`} />
 
       {editing ? (
         <input
           autoFocus
-          className="flex-1 border border-gray-300 px-2 py-1 rounded text-sm"
+          className="flex-1 border border-orange-300 px-3 py-1.5 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
           value={editingName}
           onChange={e => setEditingName(e.target.value)}
           onBlur={handleRename}
           onKeyDown={e => e.key === 'Enter' && handleRename()}
         />
       ) : (
-        <span className="truncate flex-1">{request.name}</span>
+        <span className={`truncate flex-1 font-medium ${selectedRequest?.id === request?.id ? 'text-orange-900' : 'text-gray-800'}`}>{request.name}</span>
       )}
 
       {/* Dropdown */}
        {selectedWorkspace.role !== 'VIEWER' &&
       <div className="relative" ref={dropdownRef}>
         <button
-          className="p-1 hover:bg-gray-200 rounded"
+          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
           onClick={e => {
             e.stopPropagation();
             setActiveDropdown(prev => !prev);
           }}
         >
-          <MoreVertical className="w-3 h-3" />
+          <MoreVertical className="w-4 h-4 text-gray-500" />
         </button>
         {activeDropdown && (
-          <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+          <div className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden">
             <button
-              className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
               onClick={() => {
                 setEditing(true);
                 setActiveDropdown(false);
@@ -148,8 +149,9 @@ const handleDelete = async () => {
               <Edit3 className="w-4 h-4" />
               <span>Rename</span>
             </button>
+            <div className="border-t border-gray-100"></div>
             <button
-              className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
+              className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
               onClick={handleDelete}
             >
               <Trash2 className="w-4 h-4" />

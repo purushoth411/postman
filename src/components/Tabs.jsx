@@ -8,45 +8,38 @@ const CollectionIcon = () => (
 );
 
 const Tabs = ({ activeTab, setActiveTab }) => (
-  <div className="flex border-b border-gray-200">
+  <div className="flex border-b border-gray-200 bg-white">
     <button
-      className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+      className={`flex-1 px-4 py-3.5 text-sm font-semibold transition-all duration-200 relative ${
         activeTab === 'collections'
-          ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
-          : 'text-gray-600 hover:text-gray-800'
+          ? 'text-orange-600 bg-white'
+          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
       }`}
       onClick={() => setActiveTab('collections')}
     >
       <div className="flex items-center justify-center space-x-2">
-        <LibraryBig size={17} />
+        <LibraryBig size={18} />
         <span>Collections</span>
       </div>
+      {activeTab === 'collections' && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600"></div>
+      )}
     </button>
-    {/* <button
-      className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-        activeTab === 'history'
-          ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
-          : 'text-gray-600 hover:text-gray-800'
-      }`}
-      onClick={() => setActiveTab('history')}
-    >
-      <div className="flex items-center justify-center space-x-2">
-        <History className="w-4 h-4" />
-        <span>History</span>
-      </div>
-    </button> */}
     <button
-      className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+      className={`flex-1 px-4 py-3.5 text-sm font-semibold transition-all duration-200 relative ${
         activeTab === 'environments'
-          ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
-          : 'text-gray-600 hover:text-gray-800'
+          ? 'text-orange-600 bg-white'
+          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
       }`}
       onClick={() => setActiveTab('environments')}
     >
       <div className="flex items-center justify-center space-x-2">
         <Globe className="w-4 h-4" />
-        <span>Env</span>
+        <span>Environments</span>
       </div>
+      {activeTab === 'environments' && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600"></div>
+      )}
     </button>
   </div>
 );

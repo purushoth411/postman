@@ -1,47 +1,56 @@
-// import React, { useState } from 'react';
-// import EmptyState from '../components/EmptyState';
-// import EnvironmentEditor from '../components/EnvironmentEditor';
-
-// function Dashboard({ selectedRequest, selectedEnvironment, selectedGlobal, workspaceId }) {
-//   // If an environment is selected, show the environment editor
-//   if (selectedEnvironment) {
-//     return (
-//       <EnvironmentEditor 
-//         environment={selectedEnvironment} 
-//         workspaceId={workspaceId}
-//         isGlobal={false}
-//       />
-//     );
-//   }
-
-//   // If global variables are selected, show the global editor
-//   if (selectedGlobal) {
-//     return (
-//       <EnvironmentEditor 
-//         workspaceId={selectedGlobal} 
-//         isGlobal={true}
-//       />
-//     );
-//   }
-
-//   // If a request is selected, show the request editor (your existing logic)
-//   if (selectedRequest) {
-//     // Return your existing request editor component
-//     return <div>Request Editor for {selectedRequest.name}</div>;
-//   }
-
-//   // Default empty state
-//   return <EmptyState />;
-// }
-
-// export default Dashboard;
 import React from 'react'
 import EmptyState from '../components/EmptyState'
+import RequestEditor from "../components/EditorDiv/RequestEditor";
+import EnvironmentEditor from "../components/EnvironmentEditor";
+import { useAuth } from "../utils/idb";
 
 function Dashboard() {
+  const {
+      selectedRequest,
+      setSelectedRequest,
+      selectedEnvironment,
+      selectedGlobal,
+      selectedWorkspace,
+    } = useAuth();
+
+     const renderMainContent = () => {
+ 
+    if (selectedRequest) {
+      return (
+        <RequestEditor
+          request={selectedRequest}
+          onChangeRequest={setSelectedRequest}
+        />
+      );
+    }
+    
+    if (selectedEnvironment) {
+      return (
+        <EnvironmentEditor
+          environment={selectedEnvironment}
+          workspaceId={selectedWorkspace?.id}
+          isGlobal={false}
+        />
+      );
+    }
+    
+    if (selectedGlobal) {
+      return (
+        <EnvironmentEditor
+          workspaceId={selectedGlobal}
+          isGlobal={true}
+        />
+      );
+    }
+    
+    // Default to Outlet (Dashboard or other routes)
+    return <EmptyState />;
+  };
+
   return (
     <div>
-      <EmptyState />
+      {renderMainContent()}
+     
     </div>
   )
 }

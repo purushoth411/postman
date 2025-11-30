@@ -6,7 +6,6 @@ import { useAuth } from "../utils/idb";
 import { useEffect } from "react";
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
-import Users from "../pages/Users";
 import Signup from "../pages/Signup";
 
 
@@ -23,7 +22,6 @@ export default function AppRouter() {
         <Route element={<PrivateRoute />}>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/users" element={<Users />} />
           </Route>
         </Route>
         

@@ -5,8 +5,7 @@ import {
   MoreVertical, 
   Edit3, 
   Trash2,
-  Settings,
-  Check
+  Settings
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -67,17 +66,19 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
 
   return (
     <div 
-      className={`flex items-center justify-between px-2 py-2 rounded cursor-pointer group ${
-        isActive ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-100'
+      className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer group transition-all duration-150 ${
+        isActive 
+          ? 'bg-orange-50 border border-orange-200 shadow-sm' 
+          : 'hover:bg-white hover:border hover:border-gray-200 hover:shadow-sm border border-transparent'
       }`}
       onClick={() => !isEditing && onSelect()}
     >
       <div className="flex items-center space-x-2 flex-1 min-w-0">
-        <Globe className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-blue-500' : 'text-gray-400'}`} />
+        <Globe className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-orange-500' : 'text-gray-400'}`} />
         {isEditing ? (
           <input
             autoFocus
-            className="flex-1 border px-2 py-1 rounded text-sm"
+            className="flex-1 border border-orange-300 px-3 py-1.5 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             onKeyDown={(e) => {
@@ -91,37 +92,43 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className={`text-sm truncate ${isActive ? 'font-medium text-blue-700' : 'text-gray-700'}`}>
+          <span className={`text-sm truncate font-semibold ${isActive ? 'text-orange-700' : 'text-gray-800'}`}>
             {environment.name}
           </span>
         )}
       </div>
 
-      <div className="flex items-center space-x-1">
-        {isActive && (
-          <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
-        )}
-        {!isActive && (
-           <button
-  onClick={(e) => {
-    e.stopPropagation();
-    onSetActive();
-  }}
-  className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
->
-  Set Active
-</button>
-
-        )}
+      <div className="flex items-center space-x-2">
+        {/* Toggle Switch */}
+        <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => {
+                e.stopPropagation();
+                onSetActive();
+              }}
+              className="sr-only peer"
+            />
+            <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+              isActive ? 'bg-orange-500' : 'bg-gray-300'
+            }`}>
+              <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${
+                isActive ? 'translate-x-5' : 'translate-x-0'
+              }`}></div>
+            </div>
+          </label>
+        </div>
         <div className="relative">
         <button
   onClick={(e) => {
     e.stopPropagation();
     setShowMenu(!showMenu);
   }}
-  className="p-1 hover:bg-gray-200 rounded"
+  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
 >
-  <MoreVertical className="w-3 h-3" />
+  <MoreVertical className="w-4 h-4 text-gray-500" />
 </button>
           {showMenu && (
             <>
@@ -132,21 +139,22 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
                   setShowMenu(false);
                 }}
               />
-              <div className="absolute right-0 mt-1 w-40 bg-white border rounded shadow-lg z-20">
+              <div className="absolute right-0 mt-1 w-44 bg-white border border-gray-200 rounded-xl shadow-xl z-20 overflow-hidden">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsEditing(true);
                     setShowMenu(false);
                   }}
-                  className="w-full flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 text-sm text-left"
+                  className="w-full flex items-center space-x-2 px-4 py-2.5 hover:bg-gray-50 text-sm text-left transition-colors"
                 >
                   <Edit3 className="w-4 h-4" />
                   <span>Rename</span>
                 </button>
+                <div className="border-t border-gray-100"></div>
                 <button
                   onClick={handleDelete}
-                  className="w-full flex items-center space-x-2 px-3 py-2 hover:bg-red-50 text-sm text-left text-red-600"
+                  className="w-full flex items-center space-x-2 px-4 py-2.5 hover:bg-red-50 text-sm text-left text-red-600 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Delete</span>

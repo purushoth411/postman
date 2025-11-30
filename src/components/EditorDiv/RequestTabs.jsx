@@ -3,7 +3,7 @@ import RequestBodyEditor from './RequestBodyEditor';
 import ParamsEditor from "./ParamsEditor";
 import HeadersEditor from "./HeadersEditor";
 
-const RequestTabs = ({ activeTab, setActiveTab, method, body_raw, body_formdata, onBodyChange, params,headers,setParams,setHeaders }) => {
+const RequestTabs = ({ activeTab, setActiveTab, method, body_raw, body_formdata, onBodyChange, params,headers,setParams,setHeaders, fileObjects, setFileObjects }) => {
   return (
     <>
       <div className="flex border-b text-sm font-medium">
@@ -29,6 +29,8 @@ const RequestTabs = ({ activeTab, setActiveTab, method, body_raw, body_formdata,
             body_raw={body_raw}
             body_formdata={body_formdata}
             onChange={onBodyChange}
+            fileObjects={fileObjects}
+            setFileObjects={setFileObjects}
           />
         )}
 

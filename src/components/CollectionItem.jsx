@@ -17,6 +17,7 @@ import { toast } from 'react-hot-toast';
 import RequestItem from './RequestItem';
 import { useAuth } from '../utils/idb';
 import FolderItem from './FolderItem';
+import { getSocket } from '../utils/Socket';
 
 const CollectionItem = ({ collection, setCollections, onRequestSelect, activeRequestId }) => {
     const { user,expandPath,selectedWorkspace } = useAuth();
@@ -31,14 +32,183 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
 
   const dropdownRef = useRef(null);
 
+  
+    // SOCKET SETUP — Listen for new collections
+  useEffect(() => {
+  const socket = getSocket();
+  if (!socket || !user?.id) return;
+
+  const handleFolderAdded = (data) => {
+    console.log('Socket Event: folderAdded', data);
+
+
+    const newFolder = data.folder;
+
+    setCollections(prev =>
+      prev.map(c =>
+        parseInt(c.id) === parseInt(newFolder.collection_id)
+          ? { ...c, folders: [...(c.folders || []), newFolder] }
+          : c
+      )
+    );
+
+    //toast.success(`New folder added: ${newFolder.name}`);
+  };
+
+  socket.on('folderAdded', handleFolderAdded);
+  return () => socket.off('folderAdded', handleFolderAdded);
+}, [user?.id, selectedWorkspace?.id, setCollections]);
+
+useEffect(() => {
+  const socket = getSocket();
+  if (!socket || !user?.id) return;
+
+  // ✅ When a new request is added
+  const handleRequestAdded = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+
+    console.log("Socket Event: requestAdded", data);
+
+    setCollections(prev =>
+      prev.map(c => {
+        if (parseInt(c.id) !== parseInt(data.collectionId)) return c;
+
+        // Add to correct folder or collection root
+        if (data.folderId) {
+          const addToFolder = (folders) =>
+            folders.map(f =>
+              f.id === data.folderId
+                ? { ...f, requests: [...(f.requests || []), data.request] }
+                : { ...f, folders: addToFolder(f.folders || []) }
+            );
+          return { ...c, folders: addToFolder(c.folders || []) };
+        } else {
+          return { ...c, requests: [...(c.requests || []), data.request] };
+        }
+      })
+    );
+
+   // toast.success(`New request added: ${data.request.name}`);
+  };
+
+  // ✅ When a folder is renamed
+  const handleFolderRenamed = (data) => {
+    
+
+    console.log("Socket Event: folderRenamed", data);
+
+    setCollections(prev =>
+      prev.map(c => {
+        const updateFolder = (folders) =>
+          folders.map(f =>
+            f.id === data.folderId
+              ? { ...f, name: data.name }
+              : { ...f, folders: updateFolder(f.folders || []) }
+          );
+
+        return { ...c, folders: updateFolder(c.folders || []) };
+      })
+    );
+  };
+
+  // ✅ When a folder is deleted
+  const handleFolderDeleted = (data) => {
+    
+
+    console.log("Socket Event: folderDeleted", data);
+
+    setCollections(prev =>
+      prev.map(c => {
+        const removeFolder = (folders) =>
+          folders
+            .map(f => ({
+              ...f,
+              folders: removeFolder(f.folders || []),
+            }))
+            .filter(f => f.id !== data.folderId);
+
+        return { ...c, folders: removeFolder(c.folders || []) };
+      })
+    );
+
+ //   toast.success("Folder deleted successfully");
+  };
+
+  // ✅ When a collection is renamed
+  const handleCollectionRenamed = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+    if (parseInt(data.collectionId) !== parseInt(collection.id)) return;
+
+    console.log("Socket Event: collectionRenamed", data);
+    setCollections(prev =>
+      prev.map(c =>
+        c.id === data.collectionId ? { ...c, name: data.name } : c
+      )
+    );
+  };
+
+  // ✅ When a collection is deleted
+  const handleCollectionDeleted = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+    if (parseInt(data.collectionId) !== parseInt(collection.id)) return;
+
+    console.log("Socket Event: collectionDeleted", data);
+    setCollections(prev => prev.filter(c => c.id !== data.collectionId));
+    toast.success("Collection deleted");
+  };
+
+  // ✅ When a request is renamed
+  const handleRequestRenamed = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+    if (parseInt(data.collectionId) !== parseInt(collection.id)) return;
+
+    console.log("Socket Event: requestRenamed", data);
+    setRequestData(data.requestId, { name: data.name });
+  };
+
+  // ✅ When a request is deleted
+  const handleRequestDeleted = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+    if (parseInt(data.collectionId) !== parseInt(collection.id)) return;
+
+    console.log("Socket Event: requestDeleted", data);
+    setRequestData(data.requestId, null, true);
+  };
+
+  // ✅ When a request is updated
+  const handleRequestUpdated = (data) => {
+    if (data.workspaceId !== selectedWorkspace?.id) return;
+    if (parseInt(data.collectionId) !== parseInt(collection.id)) return;
+
+    console.log("Socket Event: requestUpdated", data);
+    setRequestData(data.requestId, data.changes);
+  };
+
+  socket.on("requestAdded", handleRequestAdded);
+  socket.on("folderRenamed", handleFolderRenamed);
+  socket.on("folderDeleted", handleFolderDeleted);
+  socket.on("collectionRenamed", handleCollectionRenamed);
+  socket.on("collectionDeleted", handleCollectionDeleted);
+  socket.on("requestRenamed", handleRequestRenamed);
+  socket.on("requestDeleted", handleRequestDeleted);
+  socket.on("requestUpdated", handleRequestUpdated);
+
+  return () => {
+    socket.off("requestAdded", handleRequestAdded);
+    socket.off("folderRenamed", handleFolderRenamed);
+    socket.off("folderDeleted", handleFolderDeleted);
+    socket.off("collectionRenamed", handleCollectionRenamed);
+    socket.off("collectionDeleted", handleCollectionDeleted);
+    socket.off("requestRenamed", handleRequestRenamed);
+    socket.off("requestDeleted", handleRequestDeleted);
+    socket.off("requestUpdated", handleRequestUpdated);
+  };
+}, [user?.id, selectedWorkspace?.id, setCollections, collection.id]);
+
+
  // console.log("collcetioon Deytails"+JSON.stringify(collection,null,2));
 
   // Close dropdown when clicking outside
-
-  useEffect(()=>{
-    console.log("Colllection");
-    console.log(collection);
-  },[collection]);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -317,17 +487,17 @@ const setRequestData = (requestId, newData, isDelete = false) => {
   };
 
   return (
-    <div className="group">
+    <div className="group mb-1">
       {/* Header */}
-      <div className="flex items-center space-x-2 px-2 py-1.5 text-sm rounded-lg hover:bg-gray-100">
-        <button onClick={toggleExpanded} className="p-0 border-none bg-transparent">
-          {expanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+      <div className="flex items-center space-x-2 px-3 py-2 text-sm rounded-lg hover:bg-white transition-colors duration-150 border border-transparent hover:border-gray-200 hover:shadow-sm">
+        <button onClick={toggleExpanded} className="p-0.5 border-none bg-transparent hover:bg-gray-100 rounded transition-colors">
+          {expanded ? <ChevronDown className="w-4 h-4 text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
         </button>
 
         {editing ? (
           <input
             autoFocus
-            className="font-medium text-gray-800 flex-1 border border-gray-300 px-2 py-1 rounded text-sm"
+            className="font-medium text-gray-900 flex-1 border border-orange-300 px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
             value={editingName}
             onChange={e => setEditingName(e.target.value)}
             onKeyDown={e => handleKeyDownInput(e, handleRename)}
@@ -342,9 +512,9 @@ const setRequestData = (requestId, newData, isDelete = false) => {
             onClick={e => e.stopPropagation()}
           />
         ) : (
-          <button onClick={toggleExpanded} className="flex items-center space-x-2 flex-1 text-left p-0 border-none bg-transparent">
+          <button onClick={toggleExpanded} className="flex items-center space-x-2 flex-1 text-left p-0 border-none bg-transparent hover:text-orange-600 transition-colors">
             {expanded ? <FolderOpen className="w-4 h-4 text-orange-500" /> : <Folder className="w-4 h-4 text-orange-500" />}
-            <span className="font-medium text-gray-800 truncate">{collection.name}</span>
+            <span className="font-semibold text-gray-800 truncate">{collection.name}</span>
           </button>
         )}
         
@@ -360,17 +530,17 @@ const setRequestData = (requestId, newData, isDelete = false) => {
               e.stopPropagation();
               setActiveDropdown(prev => (prev === collection.id ? null : collection.id));
             }}
-            className=" p-1 hover:bg-gray-200 rounded transition-opacity"
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
           >
-            <MoreVertical className="w-3 h-3" />
+            <MoreVertical className="w-4 h-4 text-gray-500" />
           </button>
           {activeDropdown === collection.id && (
             <div
               ref={dropdownRef}
-              className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+              className="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-xl z-10 overflow-hidden"
             >
               <button
-                className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg"
+                className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 onClick={() => {
                   setEditing(true);
                   setEditingName(collection.name);
@@ -381,7 +551,7 @@ const setRequestData = (requestId, newData, isDelete = false) => {
                 <span>Rename</span>
               </button>
               <button
-                className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 onClick={() => {
                   setShowAddRequestInput(true);
                   setActiveDropdown(null);
@@ -391,7 +561,7 @@ const setRequestData = (requestId, newData, isDelete = false) => {
                 <span>Add Request</span>
               </button>
               <button
-                className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                 onClick={() => {
                   setShowAddFolderInput(true);
                   setActiveDropdown(null);
@@ -400,9 +570,9 @@ const setRequestData = (requestId, newData, isDelete = false) => {
                 <FolderPlus className="w-4 h-4" />
                 <span>Add Folder</span>
               </button>
-              <hr className="my-1" />
+              <div className="border-t border-gray-100 my-1"></div>
               <button
-                className="w-full flex items-center space-x-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg"
+                className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 onClick={handleDelete}
               >
                 <Trash2 className="w-4 h-4" />
@@ -416,11 +586,11 @@ const setRequestData = (requestId, newData, isDelete = false) => {
 
       {/* Add Request Input */}
       {showAddRequestInput && (
-        <div className="ml-6 mt-2 flex items-center space-x-2">
+        <div className="ml-8 mt-2 mb-2 flex items-center space-x-2">
           <FileText className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border border-gray-300 px-2 py-1 rounded text-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
             placeholder="Request name..."
             value={newRequestName}
             onChange={e => setNewRequestName(e.target.value)}
@@ -439,11 +609,11 @@ const setRequestData = (requestId, newData, isDelete = false) => {
 
       {/* Add Folder Input */}
       {showAddFolderInput && (
-        <div className="ml-6 mt-2 flex items-center space-x-2">
+        <div className="ml-8 mt-2 mb-2 flex items-center space-x-2">
           <Folder className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border border-gray-300 px-2 py-1 rounded text-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
             placeholder="Folder name..."
             value={newFolderName}
             onChange={e => setNewFolderName(e.target.value)}
@@ -462,7 +632,7 @@ const setRequestData = (requestId, newData, isDelete = false) => {
 
       {/* Contents */}
       {expanded && (
-        <div className="ml-2 mt-1 space-y-1">
+        <div className="ml-4 mt-1 space-y-0.5">
         {collection.folders?.map(folder => (
   <FolderItem
     key={folder.id}

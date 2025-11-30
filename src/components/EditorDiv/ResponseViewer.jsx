@@ -6,6 +6,7 @@ const ResponseViewer = ({ response, variables }) => {
   const [viewMode, setViewMode] = useState('pretty'); // pretty, raw, html, preview
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [showRequestDetails, setShowRequestDetails] = useState(false);
 
   const formatJson = (text) => {
     try {
@@ -128,8 +129,20 @@ const ResponseViewer = ({ response, variables }) => {
             <span className="text-xs text-gray-500">
               {response.time} ms • {response.size} bytes
             </span>
+            {response.resolvedUrl && (
+              <span className="text-xs text-gray-400 truncate max-w-xs" title={response.resolvedUrl}>
+                {response.resolvedUrl}
+              </span>
+            )}
           </div>
           <div className="flex gap-2">
+            <button
+              onClick={() => setShowRequestDetails(!showRequestDetails)}
+              className={`p-2 rounded hover:bg-gray-100 ${showRequestDetails ? 'bg-orange-100 text-orange-600' : ''}`}
+              title="Show request details"
+            >
+              <span className="text-xs font-medium">{response.requestMethod || 'GET'}</span>
+            </button>
             <button
               onClick={handleSearchToggle}
               className={`p-2 rounded hover:bg-gray-100 ${showSearch ? 'bg-blue-100 text-blue-600' : ''}`}
@@ -146,6 +159,27 @@ const ResponseViewer = ({ response, variables }) => {
             </button>
           </div>
         </div>
+
+        {/* Request Details */}
+        {showRequestDetails && (
+          <div className="px-4 pb-3 border-b border-gray-200 bg-gray-50">
+            <div className="text-xs font-semibold text-gray-700 mb-2">Request Details:</div>
+            <div className="space-y-1 text-xs">
+              <div><span className="font-medium">Method:</span> <span className="text-gray-600">{response.requestMethod || 'GET'}</span></div>
+              {response.resolvedUrl && (
+                <div><span className="font-medium">URL:</span> <span className="text-gray-600 break-all">{response.resolvedUrl}</span></div>
+              )}
+              {response.requestHeaders && Object.keys(response.requestHeaders).length > 0 && (
+                <div>
+                  <span className="font-medium">Headers:</span>
+                  <pre className="mt-1 p-2 bg-white border border-gray-200 rounded text-xs overflow-x-auto">
+                    {JSON.stringify(response.requestHeaders, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* View Mode Tabs */}
         <div className="flex items-center space-x-1 px-4 pb-2">
