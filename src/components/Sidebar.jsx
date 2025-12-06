@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../utils/idb';
+import { getApiUrl, API_ENDPOINTS } from '../config/api';
 
 import Tabs from './Tabs';
 import SearchBar from './SearchBar';
@@ -21,7 +22,8 @@ const Sidebar = ({ onRequestSelect, onEnvironmentSelect, onGlobalSelect }) => {
       (async () => {
         try {
           const res = await fetch(
-            `http://localhost:5000/api/api/getCollections?wks_id=${selectedWorkspace.id}`
+            `${getApiUrl(API_ENDPOINTS.GET_COLLECTIONS)}?wks_id=${selectedWorkspace.id}`,
+            { credentials: 'include' } // Include cookies for session
           );
           if (!res.ok) throw new Error("Failed to fetch collections");
           const data = await res.json();
@@ -40,7 +42,8 @@ const Sidebar = ({ onRequestSelect, onEnvironmentSelect, onGlobalSelect }) => {
       (async () => {
         try {
           const res = await fetch(
-            `http://localhost:5000/api/api/getEnvironments?wks_id=${selectedWorkspace.id}&user_id=${user.id}`
+            `${getApiUrl(API_ENDPOINTS.GET_ENVIRONMENTS)}?wks_id=${selectedWorkspace.id}&user_id=${user.id}`,
+             { credentials: 'include' }
           );
           if (!res.ok) throw new Error("Failed to fetch environments");
           const data = await res.json();

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/images/logo.jpg";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../utils/idb";
+import { getApiUrl, API_ENDPOINTS } from "../config/api";
 
 function Signup() {
   const [name, setName] = useState("");
@@ -22,9 +23,10 @@ function Signup() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/users/register", {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.REGISTER), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({ name, email, userpass }),
       });
 

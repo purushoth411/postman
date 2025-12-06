@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import CollectionItem from './CollectionItem';
 import { useAuth } from '../utils/idb';
 import { getSocket } from '../utils/Socket';
+import { getApiUrl, API_ENDPOINTS } from '../config/api';
 
 const CollectionIcon = () => (
   <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -43,7 +44,9 @@ const CollectionList = ({ collections, setCollections, userId, onRequestSelect, 
         ];
       });
 
-      toast.success(`New collection added: ${newCollection.name}`);
+      // Only show toast for collections added by other users (not yourself)
+      // The API response handler already updated the state
+      toast.success(`Collection "${newCollection.name}" added`);
     };
 
     socket.on('collectionAdded', handleCollectionAdded);
@@ -60,17 +63,30 @@ const CollectionList = ({ collections, setCollections, userId, onRequestSelect, 
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/api/addCollection', {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.ADD_COLLECTION), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({ user_id: userId,wks_id:selectedWorkspace.id, name }),
       });
 
       if (!res.ok) throw new Error('Failed to create collection');
 
+      const result = await res.json();
+      // Add collection to state from API response
+      if (result.collection) {
+        setCollections((prev) => {
+          const list = Array.isArray(prev) ? prev : [];
+          if (list.some((col) => parseInt(col.id) === parseInt(result.collection.id))) {
+            return list; // Already exists
+          }
+          return [...list, { ...result.collection, request_count: 0, requests: [], folders: [] }];
+        });
+      }
+
       setNewCollectionName('');
       setShowCollectionInput(false);
-      toast.success('Collection created successfully');
+      // Don't show toast here - socket event will show it
     } catch (err) {
       console.error(err);
       toast.error("Error creating collection.");

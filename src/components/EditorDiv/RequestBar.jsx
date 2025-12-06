@@ -3,6 +3,7 @@ import { Send, Save, Edit3, Check } from "lucide-react";
 import { useAuth } from "../../utils/idb";
 import { parseQueryParams } from "../../helpers/Commonhelper";
 import { toast } from "react-hot-toast";
+import { getApiUrl, API_ENDPOINTS } from "../../config/api";
 
 const RequestBar = ({ loading, onChange, onSend, onSave }) => {
   const { selectedRequest, updateRequest, selectedWorkspace } = useAuth();
@@ -54,9 +55,10 @@ const RequestBar = ({ loading, onChange, onSend, onSave }) => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/api/renameRequest`, {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.RENAME_REQUEST), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({ request_id: selectedRequest.id, name: trimmed }),
       });
 

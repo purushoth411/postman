@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { getSocket } from '../utils/Socket';
+import { getApiUrl, API_ENDPOINTS } from '../config/api';
 
 const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false, onVariablesChange }) => {
   const [variables, setVariables] = useState([]);
@@ -124,7 +125,9 @@ const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false,
   const fetchGlobalVariables = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/api/getGlobalVariables?workspace_id=${workspaceId}`);
+      const res = await fetch(`${getApiUrl(API_ENDPOINTS.GET_GLOBAL_VARIABLES)}?workspace_id=${workspaceId}`, {
+        credentials: 'include' // Include cookies for session
+      });
       if (res.ok) {
         const data = await res.json();
         setVariables(data || []);
@@ -140,7 +143,9 @@ const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false,
   const fetchEnvironmentVariables = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/api/getEnvironmentVariables?environment_id=${environment.id}`);
+      const res = await fetch(`${getApiUrl(API_ENDPOINTS.GET_ENVIRONMENT_VARIABLES)}?environment_id=${environment.id}`, {
+        credentials: 'include' // Include cookies for session
+      });
       if (res.ok) {
         const data = await res.json();
         setVariables(data || []);
@@ -161,11 +166,12 @@ const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false,
 
       // Handle deletions
       for (const id of deletedIds) {
-        const endpoint = isGlobal ? 'deleteGlobalVariable' : 'deleteEnvironmentVariable';
+        const endpoint = isGlobal ? API_ENDPOINTS.DELETE_GLOBAL_VARIABLE : API_ENDPOINTS.DELETE_ENVIRONMENT_VARIABLE;
         promises.push(
-          fetch(`http://localhost:5000/api/api/${endpoint}`, {
+          fetch(getApiUrl(endpoint), {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // Include cookies for session
             body: JSON.stringify({ id })
           })
         );
@@ -175,25 +181,27 @@ const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false,
       for (const variable of variables) {
         if (variable.isNew) {
           // Add new variable
-          const endpoint = isGlobal ? 'addGlobalVariable' : 'addEnvironmentVariable';
+          const endpoint = isGlobal ? API_ENDPOINTS.ADD_GLOBAL_VARIABLE : API_ENDPOINTS.ADD_ENVIRONMENT_VARIABLE;
           const body = isGlobal 
             ? { workspace_id: workspaceId, key: variable.key, value: variable.value, type: variable.type }
             : { environment_id: environment.id, key: variable.key, value: variable.value, type: variable.type };
           
           promises.push(
-            fetch(`http://localhost:5000/api/api/${endpoint}`, {
+            fetch(getApiUrl(endpoint), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
+              credentials: 'include', // Include cookies for session
               body: JSON.stringify(body)
             })
           );
         } else if (variable.isModified) {
           // Update existing variable
-          const endpoint = isGlobal ? 'updateGlobalVariable' : 'updateEnvironmentVariable';
+          const endpoint = isGlobal ? API_ENDPOINTS.UPDATE_GLOBAL_VARIABLE : API_ENDPOINTS.UPDATE_ENVIRONMENT_VARIABLE;
           promises.push(
-            fetch(`http://localhost:5000/api/api/${endpoint}`, {
+            fetch(getApiUrl(endpoint), {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
+              credentials: 'include', // Include cookies for session
               body: JSON.stringify({ 
                 id: variable.id, 
                 key: variable.key, 

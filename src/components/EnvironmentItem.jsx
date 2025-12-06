@@ -8,6 +8,8 @@ import {
   Settings
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getApiUrl, API_ENDPOINTS } from '../config/api';
+import { confirm } from '../utils/alert';
 
 const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvironments, workspaceId, userId }) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -16,12 +18,14 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
 
   const handleDelete = async (e) => {
     e.stopPropagation();
-    if (!window.confirm(`Delete environment "${environment.name}"?`)) return;
+    const confirmed = await confirm(`Delete environment "${environment.name}"?`, 'Delete Environment', 'warning');
+    if (!confirmed) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/api/deleteEnvironment`, {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.DELETE_ENVIRONMENT), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({ environment_id: environment.id })
       });
 
@@ -42,9 +46,10 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/api/updateEnvironment`, {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.UPDATE_ENVIRONMENT), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           environment_id: environment.id,
           name: trimmed

@@ -11,6 +11,7 @@ import {
 import { toast } from 'react-hot-toast';
 import EnvironmentItem from './EnvironmentItem';
 import { getSocket } from '../utils/Socket';
+import { getApiUrl, API_ENDPOINTS } from '../config/api';
 
 
 
@@ -95,7 +96,8 @@ const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, o
     const fetchActiveEnvironment = async () => {
       try {
         const res = await fetch(
-          `http://localhost:5000/api/api/getActiveEnvironment?user_id=${userId}&workspace_id=${workspaceId}`
+          `${getApiUrl(API_ENDPOINTS.GET_ACTIVE_ENVIRONMENT)}?user_id=${userId}&workspace_id=${workspaceId}`,
+           { credentials: 'include' }
         );
         if (!res.ok) throw new Error();
         const data = await res.json();
@@ -118,9 +120,10 @@ const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, o
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/api/addEnvironment', {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.ADD_ENVIRONMENT), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           user_id: userId,
           workspace_id: workspaceId,
@@ -131,10 +134,17 @@ const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, o
       if (!res.ok) throw new Error();
       const newEnvironment = await res.json();
       
-      setEnvironments(prev => [...prev, newEnvironment]);
+      // Update state from API response
+      setEnvironments(prev => {
+        // Check if already exists (avoid duplicates)
+        if (prev.some(env => env.id === newEnvironment.id)) {
+          return prev;
+        }
+        return [...prev, newEnvironment];
+      });
       setNewEnvName('');
       setShowAddInput(false);
-      toast.success("Environment created");
+      // Don't show toast here - socket event will show it
     } catch {
       toast.error("Failed to create environment");
     }
@@ -145,9 +155,10 @@ const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, o
       // If clicking on already active environment, deactivate it
       const newActiveId = activeEnvironmentId === envId ? null : envId;
       
-      const res = await fetch('http://localhost:5000/api/api/setActiveEnvironment', {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.SET_ACTIVE_ENVIRONMENT), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           user_id: userId,
           workspace_id: workspaceId,

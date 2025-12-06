@@ -6,6 +6,8 @@ import WorkspaceModal from "./WorkspaceModal";
 import RequestSearch from "./RequestSearch";
 import { getSocket } from "../utils/Socket";
 import { toast } from "react-hot-toast";
+import { getApiUrl, API_ENDPOINTS } from "../config/api";
+import { alertError, confirm } from "../utils/alert";
 
 const Header = () => {
   const { logout, workspaces, selectedWorkspace, setSelectedWorkspace, user, setWorkspaces } = useAuth();
@@ -22,12 +24,13 @@ const Header = () => {
 
     // Handle workspace created
     const handleWorkspaceCreated = (data) => {
+      
       console.log('Socket Event: workspaceCreated', data);
       if (data.userId === user?.id) {
         // Only add if not already in list
         const exists = workspaces.some(w => w.id === data.workspace.id);
-        if (!exists) {
-          setWorkspaces(prev => [...prev, data.workspace]);
+        if (!exists && setWorkspaces) {
+          setWorkspaces([...workspaces, data.workspace]);
           toast.success(`Workspace "${data.workspace.name}" created`);
         }
       }
@@ -92,7 +95,8 @@ const Header = () => {
     // Fetch full workspace details with members
     try {
       const response = await fetch(
-        `http://localhost:5000/api/api/getWorkspaceDetails?workspace_id=${ws.id}&user_id=${user?.id}`
+        `${getApiUrl(API_ENDPOINTS.GET_WORKSPACE_DETAILS)}?workspace_id=${ws.id}&user_id=${user?.id}`,
+         { credentials: 'include' }
       );
       const result = await response.json();
       if (result.status && result.workspace) {
@@ -100,25 +104,31 @@ const Header = () => {
         setShowModal(true);
         setShowDropdown(false);
       } else {
-        alert(result.message || "Failed to load workspace details");
+        alertError(result.message || "Failed to load workspace details");
       }
     } catch (error) {
       console.error("Error fetching workspace details:", error);
-      alert("Failed to load workspace details");
+      alertError("Failed to load workspace details");
     }
   };
 
   const handleDeleteWorkspace = async (ws, e) => {
     e.stopPropagation(); // Prevent workspace selection
     
-    if (!window.confirm(`Are you sure you want to delete "${ws.name}"? This action cannot be undone.`)) {
+    const confirmed = await confirm(
+      `Are you sure you want to delete "${ws.name}"? This action cannot be undone.`,
+      'Delete Workspace',
+      'warning'
+    );
+    if (!confirmed) {
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/api/deleteWorkspace", {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.DELETE_WORKSPACE), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           workspace_id: ws.id,
           user_id: user?.id,
@@ -138,11 +148,11 @@ const Header = () => {
         
         setShowDropdown(false);
       } else {
-        alert(result.message || "Failed to delete workspace");
+        alertError(result.message || "Failed to delete workspace");
       }
     } catch (error) {
       console.error("Error deleting workspace:", error);
-      alert("Failed to delete workspace");
+      alertError("Failed to delete workspace");
     }
   };
 
@@ -153,7 +163,9 @@ const Header = () => {
   };
 
   const handleWorkspaceCreated = (workspace) => {
-    setWorkspaces([...workspaces, workspace]);
+    if (setWorkspaces) {
+      setWorkspaces([...workspaces, workspace]);
+    }
     setSelectedWorkspace(workspace);
   };
 
@@ -297,8 +309,9 @@ const Header = () => {
             <User className="w-5 h-5" />
           </button>
           <button
-            onClick={() => {
-              if (window.confirm("Are you sure you want to log out?")) {
+            onClick={async () => {
+              const confirmed = await confirm("Are you sure you want to log out?", "Logout", "warning");
+              if (confirmed) {
                 handleLogout();
               }
             }}

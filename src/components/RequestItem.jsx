@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { File, MoreHorizontal, Edit3, Trash2, MoreVertical } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../utils/idb';
+import { getApiUrl, API_ENDPOINTS } from '../config/api';
+import { confirm } from '../utils/alert';
 
 const getMethodColor = (method) => {
   const colors = {
@@ -42,9 +44,10 @@ const handleRename = async () => {
   }
 
   try {
-    const res = await fetch(`http://localhost:5000/api/api/renameRequest`, {
+    const res = await fetch(getApiUrl(API_ENDPOINTS.RENAME_REQUEST), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Include cookies for session
       body: JSON.stringify({ request_id: request.id, name: trimmed }),
     });
 
@@ -62,11 +65,13 @@ const handleRename = async () => {
 
 // Delete request
 const handleDelete = async () => {
-  if (!window.confirm("Are you sure you want to delete this request?")) return;
+  const confirmed = await confirm("Are you sure you want to delete this request?", "Delete Request", "warning");
+  if (!confirmed) return;
   try {
-    const res = await fetch(`http://localhost:5000/api/api/deleteRequest`, {
+    const res = await fetch(getApiUrl(API_ENDPOINTS.DELETE_REQUEST), {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Include cookies for session
       body: JSON.stringify({ request_id: request.id }),
     });
     if (!res.ok) throw new Error('Failed to delete request');

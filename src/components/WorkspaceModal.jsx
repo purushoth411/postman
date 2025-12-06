@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Trash2, Plus } from "lucide-react";
+import { getApiUrl, API_ENDPOINTS } from "../config/api";
+import { alertError } from "../utils/alert";
 
 const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated, onDeleted }) => {
   const isEditMode = !!workspace;
@@ -68,9 +70,10 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
     const validMembers = members.filter(m => m.email.trim());
 
     try {
-      const response = await fetch("http://localhost:5000/api/api/createWorkspace", {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.CREATE_WORKSPACE), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           name: wsName,
           user_id: user?.id,
@@ -84,11 +87,11 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
         onClose();
         resetForm();
       } else {
-        alert(result.message || "Failed to create workspace");
+        alertError(result.message || "Failed to create workspace");
       }
     } catch (error) {
       console.error("Error creating workspace:", error);
-      alert("Failed to create workspace");
+      alertError("Failed to create workspace");
     } finally {
       setSubmitting(false);
     }
@@ -104,9 +107,10 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
     const removedMembers = existingMembers.filter(m => m.toRemove);
 
     try {
-      const response = await fetch("http://localhost:5000/api/api/updateWorkspace", {
+      const response = await fetch(getApiUrl(API_ENDPOINTS.UPDATE_WORKSPACE), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           workspace_id: workspace.id,
           name: wsName,
@@ -127,20 +131,21 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
         onClose();
         resetForm();
       } else {
-        alert(result.message || "Failed to update workspace");
+        alertError(result.message || "Failed to update workspace");
       }
     } catch (error) {
       console.error("Error updating workspace:", error);
-      alert("Failed to update workspace");
+      alertError("Failed to update workspace");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDeleteWorkspace = async () => {
-    const response = await fetch("http://localhost:5000/api/api/deleteWorkspace", {
+    const response = await fetch(getApiUrl(API_ENDPOINTS.DELETE_WORKSPACE), {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
+      credentials: 'include', // Include cookies for session
       body: JSON.stringify({
         workspace_id: workspace.id,
         user_id: user?.id,
@@ -153,7 +158,7 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
       onClose();
       resetForm();
     } else {
-      alert(result.message || "Failed to delete workspace");
+      alertError(result.message || "Failed to delete workspace");
     }
   };
 

@@ -3,6 +3,8 @@ import RequestBar from './RequestBar';
 import RequestTabs from './RequestTabs';
 import ResponseViewer from './ResponseViewer';
 import { useAuth } from '../../utils/idb';
+import { getApiUrl, API_ENDPOINTS } from '../../config/api';
+import { alertSuccess, alertError } from '../../utils/alert';
 
 const RequestEditor = ({ onChangeRequest }) => {
   const { user, selectedRequest, selectedEnvironment, selectedGlobal, selectedWorkspace } = useAuth();
@@ -42,7 +44,8 @@ const RequestEditor = ({ onChangeRequest }) => {
 
       // 1. Fetch Global Variables first (lower priority)
       const globalRes = await fetch(
-        `http://localhost:5000/api/api/getGlobalVariables?workspace_id=${selectedWorkspace.id}`
+        `${getApiUrl(API_ENDPOINTS.GET_GLOBAL_VARIABLES)}?workspace_id=${selectedWorkspace.id}`,
+         { credentials: 'include' }
       );
       if (globalRes.ok) {
         const globalData = await globalRes.json();
@@ -53,7 +56,8 @@ const RequestEditor = ({ onChangeRequest }) => {
 
       // 2. Fetch Active Environment Variables (higher priority - overrides global)
       const activeEnvRes = await fetch(
-        `http://localhost:5000/api/api/getActiveEnvironment?user_id=${user.id}&workspace_id=${selectedWorkspace.id}`
+        `${getApiUrl(API_ENDPOINTS.GET_ACTIVE_ENVIRONMENT)}?user_id=${user.id}&workspace_id=${selectedWorkspace.id}`,
+         { credentials: 'include' }
       );
       
       if (activeEnvRes.ok) {
@@ -61,7 +65,8 @@ const RequestEditor = ({ onChangeRequest }) => {
         
         if (activeEnvData.environment_id) {
           const envVarsRes = await fetch(
-            `http://localhost:5000/api/api/getEnvironmentVariables?environment_id=${activeEnvData.environment_id}`
+            `${getApiUrl(API_ENDPOINTS.GET_ENVIRONMENT_VARIABLES)}?environment_id=${activeEnvData.environment_id}`,
+             { credentials: 'include' }
           );
           
           if (envVarsRes.ok) {
@@ -220,9 +225,10 @@ const RequestEditor = ({ onChangeRequest }) => {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/api/saveRequest", {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.SAVE_REQUEST), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           request_id: request.id,
           user_id: user.id,
@@ -232,13 +238,13 @@ const RequestEditor = ({ onChangeRequest }) => {
 
       const data = await res.json();
       if (data.status) {
-        alert("✅ Request saved for all users!");
+        alertSuccess("Request saved for all users!");
       } else {
-        alert("❌ Failed to save request");
+        alertError("Failed to save request");
       }
     } catch (err) {
       console.error(err);
-      alert("⚠️ Error saving request");
+      alertError("Error saving request");
     }
   };
 

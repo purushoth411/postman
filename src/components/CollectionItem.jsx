@@ -18,6 +18,8 @@ import RequestItem from './RequestItem';
 import { useAuth } from '../utils/idb';
 import FolderItem from './FolderItem';
 import { getSocket } from '../utils/Socket';
+import { getApiUrl, API_ENDPOINTS } from '../config/api';
+import { confirm } from '../utils/alert';
 
 const CollectionItem = ({ collection, setCollections, onRequestSelect, activeRequestId }) => {
     const { user,expandPath,selectedWorkspace } = useAuth();
@@ -41,18 +43,22 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
   const handleFolderAdded = (data) => {
     console.log('Socket Event: folderAdded', data);
 
-
     const newFolder = data.folder;
 
     setCollections(prev =>
-      prev.map(c =>
-        parseInt(c.id) === parseInt(newFolder.collection_id)
-          ? { ...c, folders: [...(c.folders || []), newFolder] }
-          : c
-      )
+      prev.map(c => {
+        if (parseInt(c.id) !== parseInt(newFolder.collection_id)) return c;
+        
+        // Check if folder already exists (avoid duplicates)
+        const exists = (c.folders || []).some(f => parseInt(f.id) === parseInt(newFolder.id));
+        if (exists) return c;
+        
+        return { ...c, folders: [...(c.folders || []), newFolder] };
+      })
     );
 
-    //toast.success(`New folder added: ${newFolder.name}`);
+    // Show toast for folders added by other users
+    toast.success(`Folder "${newFolder.name}" added`);
   };
 
   socket.on('folderAdded', handleFolderAdded);
@@ -226,7 +232,8 @@ useEffect(() => {
       try {
         if (!collection.requests) {
           const res = await fetch(
-            `http://localhost:5000/api/api/getRequestsByCollectionId?collection_id=${collection.id}`
+            `${getApiUrl(API_ENDPOINTS.GET_REQUESTS_BY_COLLECTION)}?collection_id=${collection.id}`,
+             { credentials: 'include' }
           );
           const data = await res.json();
           if (data.status) {
@@ -254,7 +261,8 @@ const toggleExpanded = async () => {
   if (!expanded && !collection.requests) {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/api/getRequestsByCollectionId?collection_id=${collection.id}`
+        `${getApiUrl(API_ENDPOINTS.GET_REQUESTS_BY_COLLECTION)}?collection_id=${collection.id}`,
+         { credentials: 'include' }
       );
       const data = await res.json();
       if (data.status) {
@@ -379,9 +387,10 @@ const setRequestData = (requestId, newData, isDelete = false) => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/api/renameCollection`, {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.RENAME_COLLECTION), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({ collection_id: collection.id, name: trimmedName }),
       });
       if (!res.ok) throw new Error('Failed to rename collection');
@@ -401,9 +410,10 @@ const setRequestData = (requestId, newData, isDelete = false) => {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/api/api/addRequest', {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.ADD_REQUEST), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           user_id:user.id,
           collection_id: collection.id,
@@ -433,9 +443,10 @@ const setRequestData = (requestId, newData, isDelete = false) => {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/api/api/addFolder', {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.ADD_FOLDER), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           user_id:user.id,
           collection_id: collection.id,
@@ -444,11 +455,21 @@ const setRequestData = (requestId, newData, isDelete = false) => {
       });
       if (!res.ok) throw new Error('Failed to add folder');
       const data = await res.json();
-      const newFolder=data.folder;
-      setCollections(prev => prev.map(c => c.id === collection.id ? { ...c, folders: [...(c.folders || []), newFolder] } : c));
+      const newFolder = data.folder;
+      // Update state from API response
+      setCollections(prev => prev.map(c => {
+        if (c.id === collection.id) {
+          // Check if folder already exists (avoid duplicates)
+          const exists = (c.folders || []).some(f => f.id === newFolder.id);
+          if (!exists) {
+            return { ...c, folders: [...(c.folders || []), newFolder] };
+          }
+        }
+        return c;
+      }));
       setNewFolderName('');
       setShowAddFolderInput(false);
-      toast.success('Folder added successfully');
+      // Don't show toast here - socket event will show it
     } catch (err) {
       console.error(err);
       toast.error("Error adding folder.");
@@ -456,11 +477,13 @@ const setRequestData = (requestId, newData, isDelete = false) => {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this collection?')) return;
+    const confirmed = await confirm('Are you sure you want to delete this collection?', 'Delete Collection', 'warning');
+    if (!confirmed) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/api/deleteCollection`, {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.DELETE_COLLECTION), {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({ collection_id: collection.id }),
       });
       if (!res.ok) throw new Error('Failed to delete collection');

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { set, get, del } from "idb-keyval";
+import { getApiUrl, API_ENDPOINTS } from "../config/api";
 
 const AuthContext = createContext();
 
@@ -21,7 +22,8 @@ export const AuthProvider = ({ children }) => {
   const fetchWorkspaces = async (user) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/api/getWorkspaces?user_id=${user.id}`
+        `${getApiUrl(API_ENDPOINTS.GET_WORKSPACES)}?user_id=${user.id}`,
+        { credentials: 'include' } // Include cookies for session
       );
       const data = await res.json();
       if (data.status) {
@@ -63,6 +65,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    try {
+      // Call logout endpoint to destroy session on server
+      await fetch(getApiUrl(API_ENDPOINTS.LOGOUT), {
+        method: "POST",
+        credentials: 'include', // Include cookies for session
+      });
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+    
     setUser(null);
     await del("LoggedInUser");
     await del("SelectedWorkspace");
@@ -82,7 +94,8 @@ export const AuthProvider = ({ children }) => {
 
   try {
     const res = await fetch(
-      `http://localhost:5000/api/api/getRequest?request_id=${requestId}&user_id=${user.id}`
+      `${getApiUrl(API_ENDPOINTS.GET_REQUEST)}?request_id=${requestId}&user_id=${user.id}`,
+      { credentials: 'include' } // Include cookies for session
     );
     const data = await res.json();
 
@@ -120,9 +133,10 @@ export const AuthProvider = ({ children }) => {
   if (!user) return;
   try {
     const response = await fetch(
-      `http://localhost:5000/api/api/updateRequest?request_id=${id}&user_id=${user.id}`,
+      `${getApiUrl(API_ENDPOINTS.UPDATE_REQUEST)}?request_id=${id}&user_id=${user.id}`,
       {
         method: "PUT",
+        credentials: 'include', // Include cookies for session
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(changes),
       }
@@ -178,6 +192,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         workspaces,
+        setWorkspaces, // Export setWorkspaces function
         selectedWorkspace,
         setSelectedWorkspace: updateSelectedWorkspace,
         loading,

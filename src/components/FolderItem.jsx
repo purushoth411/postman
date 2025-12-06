@@ -14,6 +14,8 @@ import RequestItem from "./RequestItem";
 import toast from "react-hot-toast";
 import { useAuth } from "../utils/idb";
 import { getSocket } from "../utils/Socket";
+import { getApiUrl, API_ENDPOINTS } from "../config/api";
+import { confirm } from "../utils/alert";
 
 const FolderItem = ({
   folder,
@@ -43,18 +45,23 @@ const FolderItem = ({
   if (!socket || !user?.id) return;
 
 const handleFolderAdded = (data) => {
- 
-
   const newFolder = data.folder;
 
   // only update this FolderItem if the added folder is a child of this one
   if (parseInt(newFolder.parent_folder_id) !== parseInt(folder.id)) return;
+
+  // Check if folder already exists (avoid duplicates)
+  const exists = folder.folders?.some(f => parseInt(f.id) === parseInt(newFolder.id));
+  if (exists) return;
 
   setFolderData(
     folder.id,
     folder.requests || [],
     [...(folder.folders || []), newFolder]
   );
+  
+  // Show toast for folders added by other users
+  toast.success(`Folder "${newFolder.name}" added`);
 };
 
 
@@ -109,7 +116,8 @@ useEffect(() => {
         setLoading(true);
         try {
           const res = await fetch(
-            `http://localhost:5000/api/api/getRequestsByFolderId?folder_id=${folder.id}`
+            `${getApiUrl(API_ENDPOINTS.GET_REQUESTS_BY_FOLDER)}?folder_id=${folder.id}`,
+             { credentials: 'include' }
           );
           const data = await res.json();
           if (data.status) {
@@ -134,7 +142,8 @@ const toggleExpanded = async () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/api/getRequestsByFolderId?folder_id=${folder.id}`
+        `${getApiUrl(API_ENDPOINTS.GET_REQUESTS_BY_FOLDER)}?folder_id=${folder.id}`,
+         { credentials: 'include' }
       );
       const data = await res.json();
       if (data.status) {
@@ -170,9 +179,10 @@ const toggleExpanded = async () => {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/api/renameFolder", {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.RENAME_FOLDER), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({ folder_id: folder.id, name: trimmed }),
       });
       if (!res.ok) throw new Error();
@@ -191,9 +201,10 @@ const toggleExpanded = async () => {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/api/addRequest", {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.ADD_REQUEST), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           user_id: userId,
           folder_id: folder.id,
@@ -227,9 +238,10 @@ const toggleExpanded = async () => {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/api/addFolder", {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.ADD_FOLDER), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({
           user_id: user.id,
           parent_folder_id: folder.id,
@@ -238,25 +250,30 @@ const toggleExpanded = async () => {
         }),
       });
       if (!res.ok) throw new Error();
-      const newFolder = await res.json();
-      setFolderData(folder.id, folder.requests || [], [
-        ...(folder.folders || []),
-        newFolder.folder,
-      ]);
+      const result = await res.json();
+      // Update state from API response
+      if (result.folder) {
+        setFolderData(folder.id, folder.requests || [], [
+          ...(folder.folders || []),
+          result.folder,
+        ]);
+      }
       setNewFolderName("");
       setShowAddFolderInput(false);
-      toast.success("Folder added");
+      // Don't show toast here - socket event will show it for other users
     } catch {
       toast.error("Failed to add folder");
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this folder?")) return;
+    const confirmed = await confirm("Are you sure you want to delete this folder?", "Delete Folder", "warning");
+    if (!confirmed) return;
     try {
-      const res = await fetch("http://localhost:5000/api/api/deleteFolder", {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.DELETE_FOLDER), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include', // Include cookies for session
         body: JSON.stringify({ folder_id: folder.id }),
       });
       if (!res.ok) throw new Error();

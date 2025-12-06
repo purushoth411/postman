@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { useAuth } from "../utils/idb";
+import { getApiUrl, API_ENDPOINTS } from "../config/api";
 
 
 export default function RequestSearch() {
@@ -19,7 +20,8 @@ export default function RequestSearch() {
 
       try {
         const res = await fetch(
-          `http://localhost:5000/api/api/searchRequests?workspace_id=${selectedWorkspace.id}&q=${encodeURIComponent(query)}`
+          `${getApiUrl(API_ENDPOINTS.SEARCH_REQUESTS)}?workspace_id=${selectedWorkspace.id}&q=${encodeURIComponent(query)}`,
+           { credentials: 'include' }
         );
         const data = await res.json();
         if (data.status) {
