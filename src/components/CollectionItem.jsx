@@ -20,6 +20,7 @@ import FolderItem from './FolderItem';
 import { getSocket } from '../utils/Socket';
 import { getApiUrl, API_ENDPOINTS } from '../config/api';
 import { confirm } from '../utils/alert';
+import { canCreateSubfolder } from '../utils/folderUtils';
 
 const CollectionItem = ({ collection, setCollections, onRequestSelect, activeRequestId }) => {
     const { user,expandPath,selectedWorkspace } = useAuth();
@@ -376,8 +377,20 @@ const setRequestData = (requestId, newData, isDelete = false) => {
   );
 };
 
-
-
+// Helper function to flatten all folders recursively for depth calculation
+const getAllFolders = (folders) => {
+  const result = [];
+  const flatten = (folderList) => {
+    folderList.forEach(folder => {
+      result.push(folder);
+      if (folder.folders && folder.folders.length > 0) {
+        flatten(folder.folders);
+      }
+    });
+  };
+  flatten(folders);
+  return result;
+};
 
   const handleRename = async () => {
     const trimmedName = editingName.trim();
@@ -453,7 +466,10 @@ const setRequestData = (requestId, newData, isDelete = false) => {
           name: trimmed,
         }),
       });
-      if (!res.ok) throw new Error('Failed to add folder');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to add folder');
+      }
       const data = await res.json();
       const newFolder = data.folder;
       // Update state from API response
@@ -472,7 +488,7 @@ const setRequestData = (requestId, newData, isDelete = false) => {
       // Don't show toast here - socket event will show it
     } catch (err) {
       console.error(err);
-      toast.error("Error adding folder.");
+      toast.error(err.message || "Error adding folder.");
     }
   };
 
@@ -664,7 +680,8 @@ const setRequestData = (requestId, newData, isDelete = false) => {
     onRequestSelect={onRequestSelect}
     activeRequestId={activeRequestId}
     setFolderData={setFolderData}
-    setRequestData={setRequestData} 
+    setRequestData={setRequestData}
+    allFolders={getAllFolders(collection.folders || [])}
   />
 ))}
 {collection.requests?.map(req => (

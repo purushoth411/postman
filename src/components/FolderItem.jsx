@@ -16,6 +16,8 @@ import { useAuth } from "../utils/idb";
 import { getSocket } from "../utils/Socket";
 import { getApiUrl, API_ENDPOINTS } from "../config/api";
 import { confirm } from "../utils/alert";
+import { canCreateSubfolder, calculateFolderDepth } from "../utils/folderUtils";
+import { MAX_FOLDER_DEPTH } from "../constants/constant";
 
 const FolderItem = ({
   folder,
@@ -23,7 +25,8 @@ const FolderItem = ({
   onRequestSelect,
   activeRequestId,
   setFolderData,
-  setRequestData
+  setRequestData,
+  allFolders = [] // Pass all folders for depth calculation
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,6 +39,10 @@ const FolderItem = ({
   const [newFolderName, setNewFolderName] = useState("");
   const dropdownRef = useRef(null);
   const { user, expandPath,selectedWorkspace } = useAuth();
+
+  // Calculate if this folder can have subfolders
+  const canAddSubfolder = canCreateSubfolder(folder, allFolders);
+  const folderDepth = calculateFolderDepth(folder, allFolders);
 
   
     
@@ -237,6 +244,15 @@ const toggleExpanded = async () => {
       toast.error("Folder name cannot be empty");
       return;
     }
+
+    // Check depth before creating
+    if (!canAddSubfolder) {
+      toast.error(`Maximum folder depth (${MAX_FOLDER_DEPTH} levels) reached. Cannot create subfolders beyond this level.`);
+      setNewFolderName("");
+      setShowAddFolderInput(false);
+      return;
+    }
+
     try {
       const res = await fetch(getApiUrl(API_ENDPOINTS.ADD_FOLDER), {
         method: "POST",
@@ -249,7 +265,12 @@ const toggleExpanded = async () => {
           name: trimmed,
         }),
       });
-      if (!res.ok) throw new Error();
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to add folder');
+      }
+      
       const result = await res.json();
       // Update state from API response
       if (result.folder) {
@@ -261,8 +282,8 @@ const toggleExpanded = async () => {
       setNewFolderName("");
       setShowAddFolderInput(false);
       // Don't show toast here - socket event will show it for other users
-    } catch {
-      toast.error("Failed to add folder");
+    } catch (err) {
+      toast.error(err.message || "Failed to add folder");
     }
   };
 
@@ -354,11 +375,21 @@ const toggleExpanded = async () => {
                 <span>Add Request</span>
               </button>
               <button
-                className="px-4 py-2.5 text-sm hover:bg-gray-50 w-full text-left transition-colors flex items-center space-x-2"
+                className={`px-4 py-2.5 text-sm w-full text-left transition-colors flex items-center space-x-2 ${
+                  canAddSubfolder 
+                    ? 'hover:bg-gray-50 text-gray-700' 
+                    : 'opacity-50 cursor-not-allowed text-gray-400'
+                }`}
                 onClick={() => {
-                  setShowAddFolderInput(true);
-                  setActiveDropdown(null);
+                  if (canAddSubfolder) {
+                    setShowAddFolderInput(true);
+                    setActiveDropdown(null);
+                  } else {
+                    toast.error(`Maximum folder depth (${MAX_FOLDER_DEPTH} levels) reached. This folder is at level ${folderDepth}.`);
+                  }
                 }}
+                disabled={!canAddSubfolder}
+                title={canAddSubfolder ? `Add Folder (Current level: ${folderDepth})` : `Maximum depth reached (Level ${folderDepth}/${MAX_FOLDER_DEPTH})`}
               >
                 <FolderPlus className="w-4 h-4" />
                 <span>Add Folder</span>
@@ -427,6 +458,8 @@ const toggleExpanded = async () => {
               onRequestSelect={onRequestSelect}
               activeRequestId={activeRequestId}
               setFolderData={setFolderData}
+              setRequestData={setRequestData}
+              allFolders={allFolders}
             />
           ))}
           {folder.requests?.map((req) => (
