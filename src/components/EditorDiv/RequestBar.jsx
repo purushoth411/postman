@@ -95,7 +95,7 @@ const RequestBar = ({ loading, onChange, onSend, onSave }) => {
           </>
         ) : (
           <div
-            className="font-medium text-gray-700 truncate flex items-center gap-1 cursor-pointer hover:text-orange-600"
+            className="font-medium text-gray-700 truncate flex items-center gap-1 cursor-pointer hover:text-red-600"
             onClick={() => {
               if (selectedWorkspace.role !== "VIEWER") setEditingName(true);
             }}
@@ -112,7 +112,7 @@ const RequestBar = ({ loading, onChange, onSend, onSave }) => {
       <select
         value={method}
         onChange={handleMethodChange}
-        className="border rounded px-3 py-2 text-sm font-semibold focus:ring-orange-500"
+        className="border rounded px-3 py-2 text-sm font-semibold focus:ring-red-500"
       >
         {["GET", "POST", "PUT", "PATCH", "DELETE"].map((m) => (
           <option key={m} value={m}>
@@ -129,7 +129,7 @@ const RequestBar = ({ loading, onChange, onSend, onSave }) => {
         onBlur={handleUrlBlur}
         onKeyDown={handleUrlKeyDown}
         placeholder="Enter request URL"
-        className="flex-1 px-3 py-2 text-sm border rounded focus:ring-orange-500"
+        className="flex-1 px-3 py-2 text-sm border rounded focus:ring-red-500"
       />
 
       {/* Save Button */}
@@ -148,7 +148,7 @@ const RequestBar = ({ loading, onChange, onSend, onSave }) => {
       <button
         onClick={onSend}
         disabled={loading || !localUrl.trim()}
-        className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white px-4 py-2 rounded flex items-center space-x-2 text-sm"
+        className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-4 py-2 rounded flex items-center space-x-2 text-sm"
       >
         <Send className="w-4 h-4" />
         <span>{loading ? "Sending..." : "Send"}</span>

@@ -138,7 +138,7 @@ const ResponseViewer = ({ response, variables }) => {
           <div className="flex gap-2">
             <button
               onClick={() => setShowRequestDetails(!showRequestDetails)}
-              className={`p-2 rounded hover:bg-gray-100 ${showRequestDetails ? 'bg-orange-100 text-orange-600' : ''}`}
+              className={`p-2 rounded hover:bg-gray-100 ${showRequestDetails ? 'bg-red-100 text-red-600' : ''}`}
               title="Show request details"
             >
               <span className="text-xs font-medium">{response.requestMethod || 'GET'}</span>
@@ -189,7 +189,7 @@ const ResponseViewer = ({ response, variables }) => {
               onClick={() => setViewMode(mode.id)}
               className={`px-3 py-1 text-sm rounded transition-colors ${
                 viewMode === mode.id
-                  ? 'bg-orange-500 text-white'
+                  ? 'bg-red-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >

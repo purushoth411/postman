@@ -8,6 +8,7 @@ import { getSocket } from "../utils/Socket";
 import { toast } from "react-hot-toast";
 import { getApiUrl, API_ENDPOINTS } from "../config/api";
 import { alertError, confirm } from "../utils/alert";
+import apihubLogo from "../assets/images/apihub_logo.png";
 
 const Header = () => {
   const { logout, workspaces, selectedWorkspace, setSelectedWorkspace, user, setWorkspaces } = useAuth();
@@ -204,10 +205,11 @@ const Header = () => {
         {/* Left */}
         <div className="flex items-center space-x-6">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-lg">P</span>
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">Postmon</span>
+            <img 
+              src={apihubLogo} 
+              alt="APIHub Logo" 
+              className="h-10 w-auto"
+            />
           </div>
 
           {/* Workspaces */}
@@ -232,7 +234,7 @@ const Header = () => {
                       placeholder="Search workspace..."
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm bg-white"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm bg-white"
                     />
                   </div>
                 </div>
@@ -241,7 +243,7 @@ const Header = () => {
                     filteredWorkspaces.map((ws) => (
                       <div
                         key={ws.id}
-                        className="flex items-center justify-between px-4 py-3 hover:bg-orange-50 group transition-colors border-b border-gray-50 last:border-b-0"
+                        className="flex items-center justify-between px-4 py-3 hover:bg-red-50 group transition-colors border-b border-gray-50 last:border-b-0"
                       >
                         <div 
                           className="flex-1 cursor-pointer"
@@ -250,7 +252,7 @@ const Header = () => {
                           <div className="flex items-center space-x-2">
                             <span className="text-sm font-medium text-gray-800">{ws.name}</span>
                             {selectedWorkspace?.id === ws.id && (
-                              <span className="px-2 py-0.5 text-xs font-semibold text-orange-600 bg-orange-100 rounded-full">Active</span>
+                              <span className="px-2 py-0.5 text-xs font-semibold text-red-600 bg-red-100 rounded-full">Active</span>
                             )}
                           </div>
                         </div>
@@ -260,7 +262,7 @@ const Header = () => {
                           {canEdit(ws) && (
                             <button
                               onClick={(e) => handleEditWorkspace(ws, e)}
-                              className="p-1.5 text-gray-500 hover:text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"
+                              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                               title="Edit workspace"
                             >
                               <Edit2 className="w-4 h-4" />
@@ -285,7 +287,7 @@ const Header = () => {
                   )}
                 </div>
                 <div
-                  className="px-4 py-3 text-orange-600 hover:bg-orange-50 cursor-pointer border-t border-gray-100 transition-colors font-medium text-sm flex items-center space-x-2"
+                  className="px-4 py-3 text-red-600 hover:bg-red-50 cursor-pointer border-t border-gray-100 transition-colors font-medium text-sm flex items-center space-x-2"
                   onClick={handleCreateWorkspace}
                 >
                   <Plus className="w-4 h-4" />

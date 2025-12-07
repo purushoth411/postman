@@ -111,7 +111,7 @@ const CollectionList = ({ collections, setCollections, userId, onRequestSelect, 
         <div className="flex items-center space-x-2 mb-3">
           <input
             autoFocus
-            className="flex-1 border border-gray-300 px-3 py-2.5 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
+            className="flex-1 border border-gray-300 px-3 py-2.5 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
             value={newCollectionName}
             onChange={(e) => setNewCollectionName(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -129,7 +129,7 @@ const CollectionList = ({ collections, setCollections, userId, onRequestSelect, 
       ) : (
         <button
           onClick={() => setShowCollectionInput(true)}
-          className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-orange-600 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 hover:border-orange-300 transition-all duration-200 mb-3 shadow-sm hover:shadow"
+          className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-all duration-200 mb-3 shadow-sm hover:shadow"
         >
           <Plus className="w-4 h-4" />
           <span>New Collection</span>

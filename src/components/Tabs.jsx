@@ -12,7 +12,7 @@ const Tabs = ({ activeTab, setActiveTab }) => (
     <button
       className={`flex-1 px-4 py-3.5 text-sm font-semibold transition-all duration-200 relative ${
         activeTab === 'collections'
-          ? 'text-orange-600 bg-white'
+          ? 'text-red-600 bg-white'
           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
       }`}
       onClick={() => setActiveTab('collections')}
@@ -22,13 +22,13 @@ const Tabs = ({ activeTab, setActiveTab }) => (
         <span>Collections</span>
       </div>
       {activeTab === 'collections' && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600"></div>
       )}
     </button>
     <button
       className={`flex-1 px-4 py-3.5 text-sm font-semibold transition-all duration-200 relative ${
         activeTab === 'environments'
-          ? 'text-orange-600 bg-white'
+          ? 'text-red-600 bg-white'
           : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
       }`}
       onClick={() => setActiveTab('environments')}
@@ -38,7 +38,7 @@ const Tabs = ({ activeTab, setActiveTab }) => (
         <span>Environments</span>
       </div>
       {activeTab === 'environments' && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600"></div>
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-red-600"></div>
       )}
     </button>
   </div>

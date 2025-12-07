@@ -72,7 +72,7 @@ return (
                 type="checkbox"
                 checked={header.enabled !== false}
                 onChange={(e) => handleChange(index, "enabled", e.target.checked)}
-                className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                className="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
                 title="Enable/Disable header"
               />
             </div>
@@ -82,7 +82,7 @@ return (
                 value={header.key || ""}
                 onChange={(e) => handleChange(index, "key", e.target.value)}
                 placeholder="Header name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 list={`headers-${index}`}
                 disabled={header.enabled === false}
               />
@@ -97,13 +97,13 @@ return (
               value={header.value || ""}
               onChange={(e) => handleChange(index, "value", e.target.value)}
               placeholder="Header value"
-              className="col-span-5 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+              className="col-span-5 px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
               disabled={header.enabled === false}
             />
             <div className="col-span-2 flex items-center gap-1">
               <button
                 onClick={() => duplicateHeader(index)}
-                className="flex items-center justify-center p-1.5 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
+                className="flex items-center justify-center p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                 title="Duplicate header"
               >
                 <Copy className="w-4 h-4" />
@@ -122,7 +122,7 @@ return (
 
       <button
         onClick={addHeader}
-        className="mt-1 flex items-center gap-2 px-4 py-2 text-orange-600 border border-orange-300 rounded-md hover:bg-orange-50 transition-all duration-200 font-medium"
+        className="mt-1 flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-all duration-200 font-medium"
       >
         <Plus className="w-4 h-4" />
         Add Header

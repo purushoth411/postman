@@ -217,7 +217,7 @@ const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, o
           <Globe className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
             placeholder="Environment name..."
             value={newEnvName}
             onChange={(e) => setNewEnvName(e.target.value)}
@@ -261,7 +261,7 @@ const EnvironmentList = ({ environments, setEnvironments, userId, workspaceId, o
           <p className="text-sm font-medium text-gray-500">No environments</p>
           <button
             onClick={() => setShowAddInput(true)}
-            className="text-xs text-orange-600 hover:text-orange-700 font-medium mt-2 hover:underline"
+            className="text-xs text-red-600 hover:text-red-700 font-medium mt-2 hover:underline"
           >
             Create your first environment
           </button>

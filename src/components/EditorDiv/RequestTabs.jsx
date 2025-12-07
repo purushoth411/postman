@@ -13,7 +13,7 @@ const RequestTabs = ({ activeTab, setActiveTab, method, body_raw, body_formdata,
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2 capitalize ${
               activeTab === tab
-                ? 'border-b-2 border-orange-500 text-orange-600 bg-white'
+                ? 'border-b-2 border-red-500 text-red-600 bg-white'
                 : 'text-gray-600 hover:text-black'
             }`}
           >

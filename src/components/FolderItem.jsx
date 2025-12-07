@@ -323,7 +323,7 @@ const toggleExpanded = async () => {
             onChange={(e) => setEditingName(e.target.value)}
             onKeyDown={(e) => handleKeyDownInput(e, handleRename)}
             onBlur={() => handleRename()}
-            className="text-sm border border-orange-300 px-3 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="text-sm border border-red-300 px-3 py-1.5 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
           />
         ) : (
           <div className="flex-1 flex items-center" onClick={toggleExpanded}>
@@ -414,7 +414,7 @@ const toggleExpanded = async () => {
           <FileText className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
             placeholder="Request name..."
             value={newRequestName}
             onChange={(e) => setNewRequestName(e.target.value)}
@@ -433,7 +433,7 @@ const toggleExpanded = async () => {
           <Folder className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
             placeholder="Folder name..."
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}

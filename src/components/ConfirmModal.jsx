@@ -11,7 +11,7 @@ const ConfirmModal = ({ isOpen, onClose, title, message, type = 'warning', onCon
       case 'error':
         return <XCircle className="w-12 h-12 text-red-500" />;
       case 'warning':
-        return <AlertCircle className="w-12 h-12 text-orange-500" />;
+        return <AlertCircle className="w-12 h-12 text-red-500" />;
       default:
         return <Info className="w-12 h-12 text-blue-500" />;
     }
@@ -24,7 +24,7 @@ const ConfirmModal = ({ isOpen, onClose, title, message, type = 'warning', onCon
       case 'error':
         return 'bg-red-500 hover:bg-red-600';
       case 'warning':
-        return 'bg-orange-500 hover:bg-orange-600';
+        return 'bg-red-500 hover:bg-red-600';
       default:
         return 'bg-blue-500 hover:bg-blue-600';
     }

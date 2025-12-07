@@ -104,7 +104,7 @@ const handleDelete = async () => {
     <div
       className={`group flex items-center space-x-2 px-3 py-2 text-sm cursor-pointer rounded-lg ml-4 transition-all duration-150 ${
         selectedRequest?.id === request?.id 
-          ? 'bg-orange-50 text-orange-900 border border-orange-200 shadow-sm'
+          ? 'bg-red-50 text-red-900 border border-red-200 shadow-sm'
           : 'text-gray-700 hover:bg-white hover:border hover:border-gray-200 hover:shadow-sm border border-transparent'
       }`}
       onClick={() => {
@@ -115,19 +115,19 @@ const handleDelete = async () => {
       <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${getMethodColor(request.method)}`}>
         {request.method}
       </span>
-      <File className={`w-4 h-4 ${selectedRequest?.id === request?.id ? 'text-orange-600' : 'text-gray-400'}`} />
+      <File className={`w-4 h-4 ${selectedRequest?.id === request?.id ? 'text-red-600' : 'text-gray-400'}`} />
 
       {editing ? (
         <input
           autoFocus
-          className="flex-1 border border-orange-300 px-3 py-1.5 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="flex-1 border border-red-300 px-3 py-1.5 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
           value={editingName}
           onChange={e => setEditingName(e.target.value)}
           onBlur={handleRename}
           onKeyDown={e => e.key === 'Enter' && handleRename()}
         />
       ) : (
-        <span className={`truncate flex-1 font-medium ${selectedRequest?.id === request?.id ? 'text-orange-900' : 'text-gray-800'}`}>{request.name}</span>
+        <span className={`truncate flex-1 font-medium ${selectedRequest?.id === request?.id ? 'text-red-900' : 'text-gray-800'}`}>{request.name}</span>
       )}
 
       {/* Dropdown */}

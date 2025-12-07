@@ -109,7 +109,7 @@ const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange, fileObje
               onClick={() => setBodyType(type)}
               className={`flex items-center gap-2 px-4 py-1 rounded-md text-sm font-medium transition-all duration-200 ${
                 bodyType === type
-                  ? 'bg-orange-500 text-white shadow-sm'
+                  ? 'bg-red-500 text-white shadow-sm'
                   : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-300'
               }`}
             >
@@ -121,7 +121,7 @@ const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange, fileObje
         {bodyType === 'raw' && (
           <button
             onClick={formatJson}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-md transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
           >
             <Settings className="w-4 h-4" />
             Format JSON
@@ -243,7 +243,7 @@ const RequestBodyEditor = ({ method, body_raw, body_formdata, onChange, fileObje
 
             <button
               onClick={addFormField}
-              className="flex items-center gap-2 px-4 py-2 text-orange-600 border border-orange-300 rounded-md hover:bg-orange-50 transition-all duration-200 font-medium"
+              className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-all duration-200 font-medium"
             >
               <Plus className="w-4 h-4" />
               Add Form Field

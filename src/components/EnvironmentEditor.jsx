@@ -281,7 +281,7 @@ const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false,
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
           <p className="text-gray-500">Loading variables...</p>
         </div>
       </div>
@@ -324,7 +324,7 @@ const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false,
               disabled={!hasChanges || saving}
               className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
                 hasChanges && !saving
-                  ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
                   : 'bg-gray-200 text-gray-500 cursor-not-allowed'
               }`}
             >
@@ -342,7 +342,7 @@ const EnvironmentEditor = ({ environment, workspaceId, userId, isGlobal = false,
           <div className="mb-6">
             <button
               onClick={addVariable}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
             >
               <Plus className="w-4 h-4" />
               <span>Add Variable</span>
@@ -432,7 +432,7 @@ const VariableRow = ({ variable, onUpdate, onDelete, showValue, onToggleShow }) 
             type="text"
             value={key}
             onChange={(e) => handleKeyChange(e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm ${
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-sm ${
               keyError ? 'border-red-300' : 'border-gray-300'
             }`}
             placeholder="variable_name"
@@ -452,7 +452,7 @@ const VariableRow = ({ variable, onUpdate, onDelete, showValue, onToggleShow }) 
               type={showValue ? "text" : "password"}
               value={value}
               onChange={(e) => handleValueChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-sm pr-16"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-sm pr-16"
               placeholder="Enter value..."
             />
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
@@ -484,7 +484,7 @@ const VariableRow = ({ variable, onUpdate, onDelete, showValue, onToggleShow }) 
             type="checkbox"
             checked={isSecret}
             onChange={(e) => handleTypeChange(e.target.checked ? 'secret' : 'default')}
-            className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+            className="w-4 h-4 text-red-500 border-gray-300 rounded focus:ring-red-500"
           />
           <span className="text-sm text-gray-700">
             Secret variable (hidden by default)

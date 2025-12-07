@@ -536,7 +536,7 @@ const getAllFolders = (folders) => {
         {editing ? (
           <input
             autoFocus
-            className="font-medium text-gray-900 flex-1 border border-orange-300 px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+            className="font-medium text-gray-900 flex-1 border border-red-300 px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
             value={editingName}
             onChange={e => setEditingName(e.target.value)}
             onKeyDown={e => handleKeyDownInput(e, handleRename)}
@@ -551,8 +551,8 @@ const getAllFolders = (folders) => {
             onClick={e => e.stopPropagation()}
           />
         ) : (
-          <button onClick={toggleExpanded} className="flex items-center space-x-2 flex-1 text-left p-0 border-none bg-transparent hover:text-orange-600 transition-colors">
-            {expanded ? <FolderOpen className="w-4 h-4 text-orange-500" /> : <Folder className="w-4 h-4 text-orange-500" />}
+          <button onClick={toggleExpanded} className="flex items-center space-x-2 flex-1 text-left p-0 border-none bg-transparent hover:text-red-600 transition-colors">
+            {expanded ? <FolderOpen className="w-4 h-4 text-red-500" /> : <Folder className="w-4 h-4 text-red-500" />}
             <span className="font-semibold text-gray-800 truncate">{collection.name}</span>
           </button>
         )}
@@ -629,7 +629,7 @@ const getAllFolders = (folders) => {
           <FileText className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
             placeholder="Request name..."
             value={newRequestName}
             onChange={e => setNewRequestName(e.target.value)}
@@ -652,7 +652,7 @@ const getAllFolders = (folders) => {
           <Folder className="w-4 h-4 text-gray-400" />
           <input
             autoFocus
-            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
+            className="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent shadow-sm"
             placeholder="Folder name..."
             value={newFolderName}
             onChange={e => setNewFolderName(e.target.value)}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/images/logo.jpg'; 
+import logo from "../assets/images/apihub_logo.png"
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../utils/idb';
 import { getApiUrl, API_ENDPOINTS } from '../config/api';

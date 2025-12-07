@@ -118,7 +118,7 @@ useEffect(() => {
 
         <button
           onClick={addParam}
-          className="mt-1 flex items-center gap-2 px-4 py-2 text-orange-600 border border-orange-300 rounded-md hover:bg-orange-50 transition-all duration-200 font-medium"
+          className="mt-1 flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-all duration-200 font-medium"
         >
           <Plus className="w-4 h-4" />
           Add Parameter

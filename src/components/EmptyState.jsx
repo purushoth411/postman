@@ -9,7 +9,7 @@ const EmptyState = () => {
           width="200" 
           height="200" 
           viewBox="0 0 200 200" 
-          className="text-orange-500 opacity-80"
+          className="text-red-500 opacity-80"
         >
           <rect x="20" y="60" width="160" height="100" rx="10" fill="currentColor" opacity="0.1" />
           <rect x="30" y="80" width="140" height="6" rx="3" fill="currentColor" opacity="0.3" />

@@ -73,17 +73,17 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
     <div 
       className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer group transition-all duration-150 ${
         isActive 
-          ? 'bg-orange-50 border border-orange-200 shadow-sm' 
+          ? 'bg-red-50 border border-red-200 shadow-sm' 
           : 'hover:bg-white hover:border hover:border-gray-200 hover:shadow-sm border border-transparent'
       }`}
       onClick={() => !isEditing && onSelect()}
     >
       <div className="flex items-center space-x-2 flex-1 min-w-0">
-        <Globe className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-orange-500' : 'text-gray-400'}`} />
+        <Globe className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-red-500' : 'text-gray-400'}`} />
         {isEditing ? (
           <input
             autoFocus
-            className="flex-1 border border-orange-300 px-3 py-1.5 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="flex-1 border border-red-300 px-3 py-1.5 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             onKeyDown={(e) => {
@@ -97,7 +97,7 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className={`text-sm truncate font-semibold ${isActive ? 'text-orange-700' : 'text-gray-800'}`}>
+          <span className={`text-sm truncate font-semibold ${isActive ? 'text-red-700' : 'text-gray-800'}`}>
             {environment.name}
           </span>
         )}
@@ -117,7 +117,7 @@ const EnvironmentItem = ({ environment, isActive, onSetActive, onSelect, setEnvi
               className="sr-only peer"
             />
             <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-              isActive ? 'bg-orange-500' : 'bg-gray-300'
+              isActive ? 'bg-red-500' : 'bg-gray-300'
             }`}>
               <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ${
                 isActive ? 'translate-x-5' : 'translate-x-0'
