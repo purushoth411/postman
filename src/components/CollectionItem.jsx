@@ -46,14 +46,31 @@ const CollectionItem = ({ collection, setCollections, onRequestSelect, activeReq
 
     const newFolder = data.folder;
 
+    // Only handle root-level folders (no parent_folder_id) at collection level
+    // Subfolders (with parent_folder_id) are handled by FolderItem components
+    // IMPORTANT: Check parent_folder_id first - if it exists, this is a nested folder
+    if (newFolder.parent_folder_id !== null && newFolder.parent_folder_id !== undefined) {
+      // This is a subfolder (nested at any level), let FolderItem handle it
+      // Do NOT add it to collection level
+      return;
+    }
+
     setCollections(prev =>
       prev.map(c => {
         if (parseInt(c.id) !== parseInt(newFolder.collection_id)) return c;
         
-        // Check if folder already exists (avoid duplicates)
-        const exists = (c.folders || []).some(f => parseInt(f.id) === parseInt(newFolder.id));
-        if (exists) return c;
+        // Recursively check if folder already exists anywhere in the folder tree
+        const checkFolderExists = (folders) => {
+          for (const f of folders || []) {
+            if (parseInt(f.id) === parseInt(newFolder.id)) return true;
+            if (f.folders?.length && checkFolderExists(f.folders)) return true;
+          }
+          return false;
+        };
         
+        if (checkFolderExists(c.folders)) return c;
+        
+        // Only add root-level folders (no parent_folder_id)
         return { ...c, folders: [...(c.folders || []), newFolder] };
       })
     );
@@ -472,7 +489,18 @@ const getAllFolders = (folders) => {
       }
       const data = await res.json();
       const newFolder = data.folder;
-      // Update state from API response
+      
+      // IMPORTANT: Only handle root-level folders (no parent_folder_id) at collection level
+      // Subfolders are handled by FolderItem components
+      if (newFolder.parent_folder_id !== null && newFolder.parent_folder_id !== undefined) {
+        // This is a subfolder, should not be added at collection level
+        // The FolderItem component will handle it
+        setNewFolderName('');
+        setShowAddFolderInput(false);
+        return;
+      }
+      
+      // Update state from API response - only for root-level folders
       setCollections(prev => prev.map(c => {
         if (c.id === collection.id) {
           // Check if folder already exists (avoid duplicates)

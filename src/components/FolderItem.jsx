@@ -55,9 +55,11 @@ const handleFolderAdded = (data) => {
   const newFolder = data.folder;
 
   // only update this FolderItem if the added folder is a child of this one
-  if (parseInt(newFolder.parent_folder_id) !== parseInt(folder.id)) return;
+  if (!newFolder.parent_folder_id || parseInt(newFolder.parent_folder_id) !== parseInt(folder.id)) {
+    return;
+  }
 
-  // Check if folder already exists (avoid duplicates)
+  // Check if folder already exists (avoid duplicates with API response)
   const exists = folder.folders?.some(f => parseInt(f.id) === parseInt(newFolder.id));
   if (exists) return;
 
@@ -67,7 +69,8 @@ const handleFolderAdded = (data) => {
     [...(folder.folders || []), newFolder]
   );
   
-  // Show toast for folders added by other users
+  // Show toast for folders added by other users (not the current user who created it)
+  // The API response handler already shows toast for the creator
   toast.success(`Folder "${newFolder.name}" added`);
 };
 
@@ -247,7 +250,7 @@ const toggleExpanded = async () => {
 
     // Check depth before creating
     if (!canAddSubfolder) {
-      toast.error(`Maximum folder depth (${MAX_FOLDER_DEPTH} levels) reached. Cannot create subfolders beyond this level.`);
+      toast.error(`Maximum folder depth level reached. Cannot create subfolders beyond this level.`);
       setNewFolderName("");
       setShowAddFolderInput(false);
       return;
@@ -274,14 +277,19 @@ const toggleExpanded = async () => {
       const result = await res.json();
       // Update state from API response
       if (result.folder) {
-        setFolderData(folder.id, folder.requests || [], [
-          ...(folder.folders || []),
-          result.folder,
-        ]);
+        // Check if folder already exists (avoid duplicates with socket event)
+        const exists = folder.folders?.some(f => parseInt(f.id) === parseInt(result.folder.id));
+        if (!exists) {
+          setFolderData(folder.id, folder.requests || [], [
+            ...(folder.folders || []),
+            result.folder,
+          ]);
+        }
       }
       setNewFolderName("");
       setShowAddFolderInput(false);
-      // Don't show toast here - socket event will show it for other users
+      // Show toast for immediate feedback (socket event will also show for other users)
+      toast.success(`Folder "${trimmed}" added`);
     } catch (err) {
       toast.error(err.message || "Failed to add folder");
     }
@@ -385,7 +393,7 @@ const toggleExpanded = async () => {
                     setShowAddFolderInput(true);
                     setActiveDropdown(null);
                   } else {
-                    toast.error(`Maximum folder depth (${MAX_FOLDER_DEPTH} levels) reached. This folder is at level ${folderDepth}.`);
+                    toast.error(`Maximum folder depth level reached. This folder is at level ${folderDepth}.`);
                   }
                 }}
                 disabled={!canAddSubfolder}
