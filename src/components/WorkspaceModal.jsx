@@ -13,6 +13,8 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [emailSuggestions, setEmailSuggestions] = useState({}); // { index: [users] }
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(null);
 
   useEffect(() => {
     if (workspace) {
@@ -40,6 +42,74 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
     const updated = [...members];
     updated[index][field] = value;
     setMembers(updated);
+
+    // If email field changed and has 5+ characters, search for suggestions
+    if (field === 'email') {
+      const trimmedValue = value.trim();
+      if (trimmedValue.length >= 5) {
+        searchUsers(trimmedValue, index);
+      } else {
+        // Clear suggestions if less than 5 characters
+        setEmailSuggestions(prev => {
+          const newSuggestions = { ...prev };
+          delete newSuggestions[index];
+          return newSuggestions;
+        });
+        // Only clear active index if it's for this input
+        if (activeSuggestionIndex === index) {
+          setActiveSuggestionIndex(null);
+        }
+      }
+    }
+  };
+
+  const searchUsers = async (query, memberIndex) => {
+    try {
+      const res = await fetch(
+        `${getApiUrl(API_ENDPOINTS.SEARCH_USERS)}?q=${encodeURIComponent(query)}&limit=5`,
+        { credentials: 'include' }
+      );
+      const data = await res.json();
+      if (data.status && data.users && data.users.length > 0) {
+        setEmailSuggestions(prev => ({
+          ...prev,
+          [memberIndex]: data.users
+        }));
+        // Show suggestions when they arrive
+        setActiveSuggestionIndex(memberIndex);
+      } else {
+        // Clear suggestions if no results
+        setEmailSuggestions(prev => {
+          const newSuggestions = { ...prev };
+          delete newSuggestions[memberIndex];
+          return newSuggestions;
+        });
+        setActiveSuggestionIndex(null);
+      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+    }
+  };
+
+  const selectEmailSuggestion = (index, user, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const updated = [...members];
+    updated[index].email = user.email;
+    setMembers(updated);
+    setEmailSuggestions(prev => {
+      const newSuggestions = { ...prev };
+      delete newSuggestions[index];
+      return newSuggestions;
+    });
+    setActiveSuggestionIndex(null);
+    
+    // Focus back on input
+    const input = document.querySelector(`input[data-member-index="${index}"]`);
+    if (input) {
+      setTimeout(() => input.focus(), 100);
+    }
   };
 
   const handleExistingMemberChange = (index, field, value) => {
@@ -67,7 +137,10 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
 
     setSubmitting(true);
 
-    const validMembers = members.filter(m => m.email.trim());
+    const validMembers = members.filter(m => {
+      const email = m.email ? m.email.trim() : '';
+      return email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    });
 
     try {
       const response = await fetch(getApiUrl(API_ENDPOINTS.CREATE_WORKSPACE), {
@@ -102,7 +175,10 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
 
     setSubmitting(true);
 
-    const validNewMembers = members.filter(m => m.email.trim());
+    const validNewMembers = members.filter(m => {
+      const email = m.email ? m.email.trim() : '';
+      return email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    });
     const updatedMembers = existingMembers.filter(m => !m.toRemove);
     const removedMembers = existingMembers.filter(m => m.toRemove);
 
@@ -243,14 +319,58 @@ const WorkspaceModal = ({ user, workspace = null, onClose, onCreated, onUpdated,
           </h3>
           <div className="space-y-2">
             {members.map((m, idx) => (
-              <div key={idx} className="flex space-x-2 items-center">
-                <input
-                  type="email"
-                  placeholder="Enter email address"
-                  value={m.email}
-                  onChange={(e) => handleMemberChange(idx, "email", e.target.value)}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-white shadow-sm"
-                />
+              <div key={idx} className="flex space-x-2 items-center relative">
+                <div className="flex-1 relative">
+                  <input
+                    type="email"
+                    data-member-index={idx}
+                    placeholder="Enter email address"
+                    value={m.email}
+                    onChange={(e) => handleMemberChange(idx, "email", e.target.value)}
+                    onFocus={() => {
+                      if (emailSuggestions[idx] && emailSuggestions[idx].length > 0) {
+                        setActiveSuggestionIndex(idx);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Don't close if clicking on suggestion dropdown
+                      const relatedTarget = e.relatedTarget;
+                      if (relatedTarget && relatedTarget.closest('.email-suggestions')) {
+                        return;
+                      }
+                      // Delay to allow click on suggestion
+                      setTimeout(() => {
+                        setActiveSuggestionIndex(null);
+                      }, 200);
+                    }}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none bg-white shadow-sm"
+                  />
+                  {/* Email Suggestions Dropdown */}
+                  {emailSuggestions[idx] && emailSuggestions[idx].length > 0 && activeSuggestionIndex === idx && (
+                    <div 
+                      className="email-suggestions absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                      onMouseDown={(e) => e.preventDefault()} // Prevent blur on input
+                    >
+                      {emailSuggestions[idx].map((user, userIdx) => (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={(e) => selectEmailSuggestion(idx, user, e)}
+                          onMouseDown={(e) => e.preventDefault()} // Prevent blur
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 flex items-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                            {user.name?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm text-gray-800 truncate">{user.name}</div>
+                            <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <select
                   value={m.role}
                   onChange={(e) => handleMemberChange(idx, "role", e.target.value)}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Search, Plus, Upload, Download, Save, User, LogOut, Edit2, Trash2 } from "lucide-react";
+import { Search, Plus, Upload, Download, Save, User, LogOut, Edit2, Trash2, MessageCircle, Bell } from "lucide-react";
 import { useAuth } from "../utils/idb";
 import { useNavigate } from "react-router-dom";
 import WorkspaceModal from "./WorkspaceModal";
 import RequestSearch from "./RequestSearch";
+import ChatPanel from "./Chat/ChatPanel";
+import NotificationPanel from "./Chat/NotificationPanel";
 import { getSocket } from "../utils/Socket";
 import { toast } from "react-hot-toast";
 import { getApiUrl, API_ENDPOINTS } from "../config/api";
@@ -17,6 +19,9 @@ const Header = () => {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingWorkspace, setEditingWorkspace] = useState(null);
+  const [showChat, setShowChat] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Socket listeners for workspace operations
   useEffect(() => {
@@ -27,12 +32,20 @@ const Header = () => {
     const handleWorkspaceCreated = (data) => {
       
       console.log('Socket Event: workspaceCreated', data);
-      if (data.userId === user?.id) {
+      // Check if current user is the creator or a member of this workspace
+      const isCreator = data.userId === user?.id;
+      const isMember = data.workspace?.members?.some(m => m.user_id === user?.id) || false;
+      
+      if (isCreator || isMember) {
         // Only add if not already in list
         const exists = workspaces.some(w => w.id === data.workspace.id);
         if (!exists && setWorkspaces) {
           setWorkspaces([...workspaces, data.workspace]);
-          toast.success(`Workspace "${data.workspace.name}" created`);
+          if (isCreator) {
+            toast.success(`Workspace "${data.workspace.name}" created`);
+          } else {
+            toast.success(`You were added to workspace "${data.workspace.name}"`);
+          }
         }
       }
     };
@@ -73,12 +86,41 @@ const Header = () => {
     socket.on('workspaceUpdated', handleWorkspaceUpdated);
     socket.on('workspaceDeleted', handleWorkspaceDeleted);
 
+    // Listen for notifications
+    const handleNotification = (data) => {
+      loadUnreadCount();
+    };
+
+    socket.on('notification', handleNotification);
+
+    // Load unread count on mount
+    loadUnreadCount();
+    const interval = setInterval(loadUnreadCount, 30000); // Refresh every 30 seconds
+
     return () => {
       socket.off('workspaceCreated', handleWorkspaceCreated);
       socket.off('workspaceUpdated', handleWorkspaceUpdated);
       socket.off('workspaceDeleted', handleWorkspaceDeleted);
+      socket.off('notification', handleNotification);
+      clearInterval(interval);
     };
   }, [user?.id, workspaces, selectedWorkspace, setWorkspaces, setSelectedWorkspace]);
+
+  // Load unread notification count
+  const loadUnreadCount = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch(getApiUrl(API_ENDPOINTS.GET_UNREAD_COUNT), {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (data.status) {
+        setUnreadCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Error loading unread count:', error);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -303,6 +345,47 @@ const Header = () => {
 
         {/* Right */}
         <div className="flex items-center space-x-3">
+          {/* Chat Button */}
+          {selectedWorkspace && (
+            <>
+              <button
+                onClick={() => {
+                  setShowChat(!showChat);
+                  setShowNotifications(false);
+                }}
+                title="Workspace Chat"
+                className={`p-2.5 rounded-lg transition-colors relative ${
+                  showChat
+                    ? 'text-red-600 bg-red-50'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                <MessageCircle className="w-5 h-5" />
+              </button>
+              
+              {/* Notification Button */}
+              <button
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  setShowChat(false);
+                }}
+                title="Notifications"
+                className={`p-2.5 rounded-lg transition-colors relative ${
+                  showNotifications
+                    ? 'text-red-600 bg-red-50'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                }`}
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
+          
           <div className="w-px h-8 bg-gray-300"></div>
           <button 
             title={user?.name || "User Profile"} 
@@ -336,6 +419,23 @@ const Header = () => {
           }}
           onCreated={handleWorkspaceCreated}
           onUpdated={handleWorkspaceUpdated}
+        />
+      )}
+
+      {/* Chat Panel */}
+      {showChat && selectedWorkspace && (
+        <ChatPanel
+          workspaceId={selectedWorkspace.id}
+          isOpen={showChat}
+          onClose={() => setShowChat(false)}
+        />
+      )}
+
+      {/* Notification Panel */}
+      {showNotifications && (
+        <NotificationPanel
+          isOpen={showNotifications}
+          onClose={() => setShowNotifications(false)}
         />
       )}
     </>

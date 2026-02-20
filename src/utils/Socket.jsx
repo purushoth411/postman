@@ -24,6 +24,19 @@ export const initSocket = (userId) => {
       }
     });
 
+    // Chat event listeners
+    socket.on("messageSent", (data) => {
+      console.log("📨 New message received:", data);
+    });
+
+    socket.on("channelCreated", (data) => {
+      console.log("📢 Channel created:", data);
+    });
+
+    socket.on("notification", (data) => {
+      console.log("🔔 Notification received:", data);
+    });
+
     socket.on("disconnect", (reason) => {
       console.warn("❌ Socket disconnected:", reason);
     });

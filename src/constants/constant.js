@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
   UPDATE_WORKSPACE: '/api/api/updateWorkspace',
   DELETE_WORKSPACE: '/api/api/deleteWorkspace',
   GET_WORKSPACE_DETAILS: '/api/api/getWorkspaceDetails',
+  SEARCH_USERS: '/api/api/searchUsers',
   
   // Collection endpoints
   GET_COLLECTIONS: '/api/api/getCollections',
@@ -56,6 +57,19 @@ export const API_ENDPOINTS = {
   ADD_GLOBAL_VARIABLE: '/api/api/addGlobalVariable',
   UPDATE_GLOBAL_VARIABLE: '/api/api/updateGlobalVariable',
   DELETE_GLOBAL_VARIABLE: '/api/api/deleteGlobalVariable',
+  
+  // Chat endpoints
+  GET_CHANNELS: '/api/chat/channels',
+  CREATE_CHANNEL: '/api/chat/channels',
+  GET_MESSAGES: '/api/chat/messages',
+  SEND_MESSAGE: '/api/chat/messages',
+  UPDATE_MESSAGE: '/api/chat/messages',
+  DELETE_MESSAGE: '/api/chat/messages',
+  GET_NOTIFICATIONS: '/api/chat/notifications',
+  MARK_NOTIFICATION_READ: '/api/chat/notifications/read',
+  MARK_ALL_NOTIFICATIONS_READ: '/api/chat/notifications/read-all',
+  GET_UNREAD_COUNT: '/api/chat/notifications/unread-count',
+  GET_MEMBERS: '/api/chat/members',
 };
 
 // Helper function to build full API URL
