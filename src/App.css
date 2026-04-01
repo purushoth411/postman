@@ -4,9 +4,9 @@
 
 /* Primary Theme Color */
 :root {
-  --prime-color: #fa713b;
-  --prime-hover: #e15c27;
-  --prime-light: #ffe3d9;
+  --prime-color: #dc2626;
+  --prime-hover: #b91c1c;
+  --prime-light: #fee2e2;
 
   /* Secondary Theme Color */
   --secondary-color: #224d68;
@@ -135,3 +135,25 @@ a{
         table.dataTable tbody tr:hover {
           background: #f8fafc;
         }
+
+        /* Width of scrollbar */
+::-webkit-scrollbar {
+  width: 4px;      /* vertical scrollbar */
+  height: 6px;     /* horizontal scrollbar */
+}
+
+/* Track (background) */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Scrollbar handle */
+::-webkit-scrollbar-thumb {
+  background: red;
+  border-radius: 10px;
+}
+
+/* On hover */
+::-webkit-scrollbar-thumb:hover {
+  background: darkred;
+}

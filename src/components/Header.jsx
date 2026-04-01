@@ -11,6 +11,7 @@ import { toast } from "react-hot-toast";
 import { getApiUrl, API_ENDPOINTS } from "../config/api";
 import { alertError, confirm } from "../utils/alert";
 import apihubLogo from "../assets/images/apihub_logo.png";
+import { s } from "framer-motion/client";
 
 const Header = () => {
   const { logout, workspaces, selectedWorkspace, setSelectedWorkspace, user, setWorkspaces } = useAuth();
@@ -346,8 +347,9 @@ const Header = () => {
         {/* Right */}
         <div className="flex items-center space-x-3">
           {/* Chat Button */}
-          {selectedWorkspace && (
+          {(selectedWorkspace) && (
             <>
+            {!selectedWorkspace.is_default_wks && (
               <button
                 onClick={() => {
                   setShowChat(!showChat);
@@ -362,6 +364,7 @@ const Header = () => {
               >
                 <MessageCircle className="w-5 h-5" />
               </button>
+            )}
               
               {/* Notification Button */}
               <button

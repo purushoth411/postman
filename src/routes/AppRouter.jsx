@@ -12,7 +12,7 @@ import Signup from "../pages/Signup";
 
 export default function AppRouter() {
   return (
-    <Router>
+    <Router basename="/postmon">
       <ScrollToTop />
       <Routes>
         {/* Public Restaurant Routes (NO layout) */}

@@ -11,11 +11,13 @@ function Login() {
   const [userpass, setUserpass] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const {login} = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const response = await fetch(getApiUrl(API_ENDPOINTS.LOGIN), {
@@ -37,6 +39,8 @@ function Login() {
     } catch (error) {
         toast.error('Unable to connect to server');
      // setErrorMsg('Unable to connect to server.'+error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,8 +101,8 @@ function Login() {
           </div>
 
           <div className="d-grid mb-3">
-            <button type="submit" className="btn btn-prime btn-block fw-semibold">
-              Login
+            <button type="submit" className="btn btn-prime btn-block fw-semibold" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </div>
 
