@@ -26,7 +26,7 @@ import { getApiUrl, API_ENDPOINTS } from '../config/api';
 ### 2. Replace URLs:
 ```javascript
 // Before:
-fetch('http://localhost:5000/api/api/addCollection', ...)
+fetch('http://:5000/api/api/addCollection', ...)
 
 // After:
 fetch(getApiUrl(API_ENDPOINTS.ADD_COLLECTION), ...)
